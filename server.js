@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const mqtt = require("mqtt");
 const express = require("express");
 const http = require("http");
@@ -9,34 +11,39 @@ const io = new Server(server);
 
 app.use(express.static("public"));
 
-server.listen(4000, () => {
-    console.log("Server running on http://localhost:4000");
+// Render automatically provides the PORT
+const PORT = process.env.PORT || 4000;
+
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
 
 // ---------------- MQTT ----------------
 
 const client = mqtt.connect({
-    host: "dd225fb78fdb4985a16165763ef3296b.s1.eu.hivemq.cloud",
-    port: 8883,
+    host: process.env.MQTT_HOST,
+    port: Number(process.env.MQTT_PORT),
     protocol: "mqtts",
-    username: "vehicledemo",
-    password: "Harikaran@2006",
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD,
     reconnectPeriod: 1000
 });
 
 client.on("connect", () => {
     console.log("Connected to HiveMQ");
-
-    client.subscribe("vehicles/VH-102/telemetry");
+    client.subscribe(process.env.MQTT_TOPIC);
 });
 
 client.on("message", (topic, message) => {
+    try {
+        const data = JSON.parse(message.toString());
 
-    const data = JSON.parse(message.toString());
+        console.clear();
+        console.log(data);
 
-    console.clear();
-    console.log(data);
+        io.emit("telemetry", data);
 
-    io.emit("telemetry", data);
-
+    } catch (err) {
+        console.log(err);
+    }
 });
