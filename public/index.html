@@ -1,31 +1,69 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+
+    <meta charset="UTF-8">
     <title>Team Renew Telemetry</title>
 
     <script src="/socket.io/socket.io.js"></script>
 
     <style>
 
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
         body{
             background:#111;
             color:white;
-            font-family:Arial;
             padding:30px;
         }
 
         h1{
             color:#00ff88;
+            margin-bottom:30px;
+            font-size:42px;
+        }
+
+        .dashboard{
+            display:flex;
+            flex-wrap:wrap;
+            gap:20px;
         }
 
         .card{
-
-            background:#222;
+            background:#1f1f1f;
+            border-radius:12px;
             padding:20px;
-            margin:10px;
-            border-radius:10px;
-            width:250px;
+            width:320px;
+            box-shadow:0 0 12px rgba(0,255,136,0.15);
+        }
 
+        .card h2{
+            color:#00ff88;
+            margin-bottom:18px;
+            border-bottom:1px solid #333;
+            padding-bottom:10px;
+        }
+
+        .data-row{
+            display:flex;
+            justify-content:space-between;
+            margin:12px 0;
+            font-size:18px;
+        }
+
+        .label{
+            color:#bbbbbb;
+        }
+
+        .value{
+            color:white;
+            font-weight:bold;
         }
 
     </style>
@@ -36,19 +74,38 @@
 
 <h1>TEAM RENEW TELEMETRY</h1>
 
-<div class="card">
+<div class="dashboard">
 
-<h2>MPU6050</h2>
+    <div class="card">
 
-<p>AX : <span id="ax">0</span></p>
-<p>AY : <span id="ay">0</span></p>
-<p>AZ : <span id="az">0</span></p>
+        <h2>GPS</h2>
 
-<p>GX : <span id="gx">0</span></p>
-<p>GY : <span id="gy">0</span></p>
-<p>GZ : <span id="gz">0</span></p>
+        <div class="data-row">
+            <span class="label">Vehicle</span>
+            <span class="value" id="vehicle">-</span>
+        </div>
 
-<p>Temperature : <span id="temp">0</span></p>
+        <div class="data-row">
+            <span class="label">Latitude</span>
+            <span class="value" id="lat">-</span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">Longitude</span>
+            <span class="value" id="lon">-</span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">Altitude</span>
+            <span class="value" id="altitude">-</span>
+        </div>
+
+        <div class="data-row">
+            <span class="label">Speed</span>
+            <span class="value" id="speed">-</span>
+        </div>
+
+    </div>
 
 </div>
 
@@ -56,21 +113,18 @@
 
 const socket = io();
 
-socket.on("telemetry",(data)=>{
+socket.on("telemetry", (data)=>{
 
-document.getElementById("ax").innerHTML=data.ax.toFixed(3);
-document.getElementById("ay").innerHTML=data.ay.toFixed(3);
-document.getElementById("az").innerHTML=data.az.toFixed(3);
-
-document.getElementById("gx").innerHTML=data.gx.toFixed(3);
-document.getElementById("gy").innerHTML=data.gy.toFixed(3);
-document.getElementById("gz").innerHTML=data.gz.toFixed(3);
-
-document.getElementById("temp").innerHTML=data.temp.toFixed(2);
+    document.getElementById("vehicle").textContent = data.vehicle ?? "-";
+    document.getElementById("lat").textContent = data.lat ?? "-";
+    document.getElementById("lon").textContent = data.lon ?? "-";
+    document.getElementById("altitude").textContent = data.altitude ?? "-";
+    document.getElementById("speed").textContent = data.speed ?? "-";
 
 });
 
 </script>
 
 </body>
+
 </html>
