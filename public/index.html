@@ -151,7 +151,7 @@ const socket = io();
 
 // Default Location (KCT)
 
-const map = L.map('map').setView([11.0789,76.9860],18);
+const map = L.map('map').setView([11.0789,76.9860],17);
 
 
 // OpenStreetMap
@@ -203,7 +203,7 @@ socket.on("telemetry",(data)=>{
 
     // Keep map centered
 
-    map.setView([data.lat,data.lon], map.getZoom());
+   map.panTo([data.lat,data.lon]);
 
 
     // Draw Route
