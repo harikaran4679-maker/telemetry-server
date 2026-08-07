@@ -65,49 +65,48 @@ client.on("connect", () => {
 
 client.on("message", async (topic, message) => {
     try {
+
         const data = JSON.parse(message.toString());
 
         console.clear();
         console.log(data);
 
-        // Send to Website
+        // Send to Dashboard
         io.emit("telemetry", data);
 
-        // Create InfluxDB Point
-        const point = new Point("imu");
+        // Create GPS Measurement
+        const point = new Point("gps");
 
-        if (data.ax !== undefined)
-            point.floatField("ax", Number(data.ax));
+        // Tag
+        if (data.vehicle)
+            point.tag("vehicle", data.vehicle);
 
-        if (data.ay !== undefined)
-            point.floatField("ay", Number(data.ay));
+        // Fields
+        if (data.lat !== undefined)
+            point.floatField("lat", Number(data.lat));
 
-        if (data.az !== undefined)
-            point.floatField("az", Number(data.az));
+        if (data.lon !== undefined)
+            point.floatField("lon", Number(data.lon));
 
-        if (data.gx !== undefined)
-            point.floatField("gx", Number(data.gx));
+        if (data.altitude !== undefined)
+            point.floatField("altitude", Number(data.altitude));
 
-        if (data.gy !== undefined)
-            point.floatField("gy", Number(data.gy));
-
-        if (data.gz !== undefined)
-            point.floatField("gz", Number(data.gz));
-
-        if (data.temperature !== undefined)
-            point.floatField("temperature", Number(data.temperature));
+        if (data.speed !== undefined)
+            point.floatField("speed", Number(data.speed));
 
         // Write to InfluxDB
         writeApi.writePoint(point);
 
-        // Force write immediately (good for testing)
         await writeApi.flush();
 
-        console.log("✓ Data written to InfluxDB");
+        console.log("✓ GPS written to InfluxDB");
 
-    } catch (err) {
+    }
+    catch (err) {
+
         console.error("InfluxDB/MQTT Error:");
         console.error(err);
+
     }
 });
 
