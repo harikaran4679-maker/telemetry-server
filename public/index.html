@@ -45,7 +45,15 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
             width:320px;
             box-shadow:0 0 12px rgba(0,255,136,0.15);
         }
+.map-card{
+    width:700px;
+}
 
+#map{
+    width:100%;
+    height:500px;
+    border-radius:10px;
+}
         .card h2{
             color:#00ff88;
             margin-bottom:18px;
@@ -79,11 +87,13 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <div class="dashboard">
 
-    <div class="card">
+   <div class="card map-card">
 
-        <h2>GPS</h2>
+    <h2>LIVE MAP</h2>
 
-        <div class="data-row">
+    <div id="map"></div>
+
+</div> class="data-row">
             <span class="label">Vehicle</span>
             <span class="value" id="vehicle">-</span>
         </div>
