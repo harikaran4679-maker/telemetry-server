@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Team Renew Telemetry</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+
+        body{
+            background:#111;
+            color:white;
+            font-family:Arial;
+            padding:30px;
+        }
+
+        h1{
+            color:#00ff88;
+        }
+
+        .card{
+
+            background:#222;
+            padding:20px;
+            margin:10px;
+            border-radius:10px;
+            width:250px;
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<h1>TEAM RENEW TELEMETRY</h1>
+
+<div class="card">
+
+<h2>MPU6050</h2>
+
+<p>AX : <span id="ax">0</span></p>
+<p>AY : <span id="ay">0</span></p>
+<p>AZ : <span id="az">0</span></p>
+
+<p>GX : <span id="gx">0</span></p>
+<p>GY : <span id="gy">0</span></p>
+<p>GZ : <span id="gz">0</span></p>
+
+<p>Temperature : <span id="temp">0</span></p>
+
+</div>
+
+<script>
+
+const socket = io();
+
+socket.on("telemetry",(data)=>{
+
+document.getElementById("ax").innerHTML=data.ax.toFixed(3);
+document.getElementById("ay").innerHTML=data.ay.toFixed(3);
+document.getElementById("az").innerHTML=data.az.toFixed(3);
+
+document.getElementById("gx").innerHTML=data.gx.toFixed(3);
+document.getElementById("gy").innerHTML=data.gy.toFixed(3);
+document.getElementById("gz").innerHTML=data.gz.toFixed(3);
+
+document.getElementById("temp").innerHTML=data.temp.toFixed(2);
+
+});
+
+</script>
+
+</body>
+</html>
