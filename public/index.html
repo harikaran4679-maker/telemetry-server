@@ -57,7 +57,7 @@ h1{
 }
 
 .map-card{
-    width:700px;
+    width:1000px;
 }
 
 .card h2{
@@ -85,7 +85,7 @@ h1{
 
 #map{
     width:100%;
-    height:500px;
+    height:700px;
     border-radius:10px;
 }
 
@@ -151,7 +151,7 @@ const socket = io();
 
 // Default Location (KCT)
 
-const map = L.map('map').setView([11.0789,76.9860],17);
+const map = L.map('map').setView([11.0789,76.9860],20);
 
 
 // OpenStreetMap
@@ -203,7 +203,7 @@ socket.on("telemetry",(data)=>{
 
     // Keep map centered
 
-   map.panTo([data.lat,data.lon]);
+   map.setView([data.lat, data.lon], 20);
 
 
     // Draw Route
