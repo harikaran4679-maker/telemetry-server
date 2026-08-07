@@ -114,13 +114,19 @@
 const socket = io();
 
 socket.on("telemetry", (data)=>{
+document.getElementById("vehicle").innerHTML = data.vehicle;
 
-    document.getElementById("vehicle").textContent = data.vehicle ?? "-";
-    document.getElementById("lat").textContent = data.lat ?? "-";
-    document.getElementById("lon").textContent = data.lon ?? "-";
-    document.getElementById("altitude").textContent = data.altitude ?? "-";
-    document.getElementById("speed").textContent = data.speed ?? "-";
+document.getElementById("lat").innerHTML =
+    Number(data.lat).toFixed(7) + "°";
 
+document.getElementById("lon").innerHTML =
+    Number(data.lon).toFixed(7) + "°";
+
+document.getElementById("altitude").innerHTML =
+    Number(data.altitude).toFixed(2) + " m";
+
+document.getElementById("speed").innerHTML =
+    Number(data.speed).toFixed(2) + " km/h";
 });
 
 </script>
