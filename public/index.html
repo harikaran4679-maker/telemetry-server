@@ -3,92 +3,93 @@
 
 <head>
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Team Renew Telemetry</title>
+<title>Team Renew Telemetry</title>
 
-    <!-- Socket.IO -->
-    <script src="/socket.io/socket.io.js"></script>
+<!-- Socket.IO -->
+<script src="/socket.io/socket.io.js"></script>
 
-    <!-- Leaflet -->
-    <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<!-- Leaflet -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <style>
+<style>
 
-        *{
-            margin:0;
-            padding:0;
-            box-sizing:border-box;
-            font-family:Arial, Helvetica, sans-serif;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
 
-        body{
-            background:#111;
-            color:white;
-            padding:30px;
-        }
+body{
+    background:#111;
+    color:white;
+    padding:30px;
+}
 
-        h1{
-            color:#00ff88;
-            margin-bottom:30px;
-            font-size:40px;
-        }
+h1{
+    color:#00ff88;
+    margin-bottom:30px;
+    font-size:42px;
+}
 
-        .dashboard{
-            display:flex;
-            flex-wrap:wrap;
-            gap:20px;
-        }
+.dashboard{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    align-items:flex-start;
+}
 
-        .card{
-            background:#1f1f1f;
-            border-radius:12px;
-            padding:20px;
-            box-shadow:0 0 12px rgba(0,255,136,.15);
-        }
+.card{
+    background:#1f1f1f;
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 0 12px rgba(0,255,136,.15);
+}
 
-        .gps-card{
-            width:320px;
-        }
+.gps-card{
+    width:320px;
+}
 
-        .map-card{
-            width:700px;
-        }
+.map-card{
+    width:700px;
+}
 
-        .card h2{
-            color:#00ff88;
-            margin-bottom:18px;
-            border-bottom:1px solid #333;
-            padding-bottom:10px;
-        }
+.card h2{
+    color:#00ff88;
+    margin-bottom:18px;
+    border-bottom:1px solid #333;
+    padding-bottom:10px;
+}
 
-        .data-row{
-            display:flex;
-            justify-content:space-between;
-            margin:14px 0;
-            font-size:18px;
-        }
+.data-row{
+    display:flex;
+    justify-content:space-between;
+    margin:14px 0;
+    font-size:18px;
+}
 
-        .label{
-            color:#bbbbbb;
-        }
+.label{
+    color:#bbbbbb;
+}
 
-        .value{
-            color:white;
-            font-weight:bold;
-        }
+.value{
+    color:white;
+    font-weight:bold;
+}
 
-        #map{
-            width:100%;
-            height:500px;
-            border-radius:10px;
-        }
+#map{
+    width:100%;
+    height:500px;
+    border-radius:10px;
+}
 
-    </style>
+</style>
 
 </head>
 
@@ -131,7 +132,7 @@
 
     </div>
 
-    <!-- MAP -->
+    <!-- LIVE MAP -->
 
     <div class="card map-card">
 
@@ -147,28 +148,40 @@
 
 const socket = io();
 
-// Default location (KCT, Coimbatore)
+
+// Default Location (KCT)
+
 const map = L.map('map').setView([11.0789,76.9860],18);
+
+
+// OpenStreetMap
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'© OpenStreetMap'
 }).addTo(map);
 
-// Vehicle marker
-let marker = L.marker([11.0789,76.9860]).addTo(map);
 
-// Vehicle route
-let route = [];
+// Vehicle Marker
 
-let polyline = L.polyline(route,{
+const marker = L.marker([11.0789,76.9860]).addTo(map);
+
+
+// Vehicle Route
+
+const route = [];
+
+const polyline = L.polyline(route,{
     color:'lime',
     weight:4
 }).addTo(map);
 
-// Receive live telemetry
+
+// Receive Live Data
+
 socket.on("telemetry",(data)=>{
 
-    document.getElementById("vehicle").textContent = data.vehicle;
+    document.getElementById("vehicle").textContent =
+        data.vehicle;
 
     document.getElementById("lat").textContent =
         Number(data.lat).toFixed(7) + "°";
@@ -182,9 +195,18 @@ socket.on("telemetry",(data)=>{
     document.getElementById("speed").textContent =
         Number(data.speed).toFixed(2) + " km/h";
 
+
+    // Move Marker
+
     marker.setLatLng([data.lat,data.lon]);
 
-    map.panTo([data.lat,data.lon]);
+
+    // Keep map centered
+
+    map.setView([data.lat,data.lon], map.getZoom());
+
+
+    // Draw Route
 
     route.push([data.lat,data.lon]);
 
@@ -195,5 +217,4 @@ socket.on("telemetry",(data)=>{
 </script>
 
 </body>
-
 </html>
