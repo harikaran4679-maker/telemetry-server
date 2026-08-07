@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<html>
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<html lang="en">
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <head>
 
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Team Renew Telemetry</title>
 
+    <!-- Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
 
@@ -29,7 +35,7 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
         h1{
             color:#00ff88;
             margin-bottom:30px;
-            font-size:42px;
+            font-size:40px;
         }
 
         .dashboard{
@@ -42,18 +48,17 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
             background:#1f1f1f;
             border-radius:12px;
             padding:20px;
-            width:320px;
-            box-shadow:0 0 12px rgba(0,255,136,0.15);
+            box-shadow:0 0 12px rgba(0,255,136,.15);
         }
-.map-card{
-    width:700px;
-}
 
-#map{
-    width:100%;
-    height:500px;
-    border-radius:10px;
-}
+        .gps-card{
+            width:320px;
+        }
+
+        .map-card{
+            width:700px;
+        }
+
         .card h2{
             color:#00ff88;
             margin-bottom:18px;
@@ -64,7 +69,7 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
         .data-row{
             display:flex;
             justify-content:space-between;
-            margin:12px 0;
+            margin:14px 0;
             font-size:18px;
         }
 
@@ -77,6 +82,12 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
             font-weight:bold;
         }
 
+        #map{
+            width:100%;
+            height:500px;
+            border-radius:10px;
+        }
+
     </style>
 
 </head>
@@ -87,13 +98,13 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <div class="dashboard">
 
-   <div class="card map-card">
+    <!-- GPS CARD -->
 
-    <h2>LIVE MAP</h2>
+    <div class="card gps-card">
 
-    <div id="map"></div>
+        <h2>GPS</h2>
 
-</div> class="data-row">
+        <div class="data-row">
             <span class="label">Vehicle</span>
             <span class="value" id="vehicle">-</span>
         </div>
@@ -120,26 +131,65 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
     </div>
 
+    <!-- MAP -->
+
+    <div class="card map-card">
+
+        <h2>LIVE MAP</h2>
+
+        <div id="map"></div>
+
+    </div>
+
 </div>
 
 <script>
 
 const socket = io();
 
-socket.on("telemetry", (data)=>{
-document.getElementById("vehicle").innerHTML = data.vehicle;
+// Default location (KCT, Coimbatore)
+const map = L.map('map').setView([11.0789,76.9860],18);
 
-document.getElementById("lat").innerHTML =
-    Number(data.lat).toFixed(7) + "°";
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap'
+}).addTo(map);
 
-document.getElementById("lon").innerHTML =
-    Number(data.lon).toFixed(7) + "°";
+// Vehicle marker
+let marker = L.marker([11.0789,76.9860]).addTo(map);
 
-document.getElementById("altitude").innerHTML =
-    Number(data.altitude).toFixed(2) + " m";
+// Vehicle route
+let route = [];
 
-document.getElementById("speed").innerHTML =
-    Number(data.speed).toFixed(2) + " km/h";
+let polyline = L.polyline(route,{
+    color:'lime',
+    weight:4
+}).addTo(map);
+
+// Receive live telemetry
+socket.on("telemetry",(data)=>{
+
+    document.getElementById("vehicle").textContent = data.vehicle;
+
+    document.getElementById("lat").textContent =
+        Number(data.lat).toFixed(7) + "°";
+
+    document.getElementById("lon").textContent =
+        Number(data.lon).toFixed(7) + "°";
+
+    document.getElementById("altitude").textContent =
+        Number(data.altitude).toFixed(2) + " m";
+
+    document.getElementById("speed").textContent =
+        Number(data.speed).toFixed(2) + " km/h";
+
+    marker.setLatLng([data.lat,data.lon]);
+
+    map.panTo([data.lat,data.lon]);
+
+    route.push([data.lat,data.lon]);
+
+    polyline.setLatLngs(route);
+
 });
 
 </script>
