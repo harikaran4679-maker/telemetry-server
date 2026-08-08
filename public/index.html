@@ -4,7 +4,9 @@
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
     <title>Team Renew Telemetry</title>
 
@@ -12,14 +14,10 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <!-- Leaflet -->
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    />
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
-    <script
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-    </script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
     <style>
@@ -36,72 +34,86 @@
             background: #111;
             color: white;
             padding: 30px;
-            min-height: 100vh;
         }
 
 
-        /* =========================
-           TITLE
-        ========================= */
+        /* =====================================================
+           MAIN TITLE
+        ===================================================== */
 
         h1 {
             color: #00ff88;
             font-size: 40px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
 
 
-        /* =========================
+        /* =====================================================
            MAIN DASHBOARD
-        ========================= */
+        ===================================================== */
 
         .dashboard {
-            position: relative;
-            width: 100%;
-            min-height: 600px;
+            display: grid;
+
+            grid-template-columns:
+                minmax(500px, 1fr)
+                500px;
+
+            gap: 30px;
+
+            align-items: start;
         }
 
 
-        /* =========================
+        /* =====================================================
+           LEFT SIDE
+        ===================================================== */
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        /* =====================================================
            SPEED CARD
-        ========================= */
+        ===================================================== */
 
         .speed-card {
 
-            position: absolute;
-
-            left: 25%;
-            top: 40px;
-
             width: 230px;
-            height: 120px;
 
             background: #1f1f1f;
 
             border-radius: 12px;
 
-            box-shadow:
-                0 0 12px rgba(0,255,136,0.15);
-
             padding: 20px;
 
             text-align: center;
+
+            box-shadow:
+                0 0 12px rgba(0,255,136,0.15);
+
+            margin-bottom: 25px;
         }
 
 
-        .speed-card h2 {
+        .speed-title {
 
             color: #00ff88;
 
             font-size: 18px;
 
-            margin-bottom: 15px;
+            font-weight: bold;
+
+            margin-bottom: 12px;
         }
 
 
         .speed-value {
 
-            font-size: 32px;
+            font-size: 34px;
 
             font-weight: bold;
 
@@ -109,18 +121,89 @@
         }
 
 
-        /* =========================
+        .speed-unit {
+
+            font-size: 14px;
+
+            color: #bbbbbb;
+
+            margin-top: 5px;
+        }
+
+
+        /* =====================================================
+           DYNAMIC VALUES ROW
+        ===================================================== */
+
+        .dynamic-row {
+
+            width: 100%;
+
+            max-width: 650px;
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr
+                1fr;
+
+            gap: 15px;
+        }
+
+
+        .dynamic-card {
+
+            background: #1f1f1f;
+
+            border-radius: 12px;
+
+            padding: 18px 10px;
+
+            text-align: center;
+
+            box-shadow:
+                0 0 12px rgba(0,255,136,0.15);
+        }
+
+
+        .dynamic-title {
+
+            color: #00ff88;
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            margin-bottom: 10px;
+        }
+
+
+        .dynamic-value {
+
+            color: white;
+
+            font-size: 25px;
+
+            font-weight: bold;
+        }
+
+
+        .dynamic-unit {
+
+            color: #999;
+
+            font-size: 12px;
+
+            margin-top: 5px;
+        }
+
+
+        /* =====================================================
            MAP CARD
-        ========================= */
+        ===================================================== */
 
         .map-card {
-
-            position: absolute;
-
-            right: 5%;
-            top: 0;
-
-            width: 470px;
 
             background: #1f1f1f;
 
@@ -130,56 +213,64 @@
 
             box-shadow:
                 0 0 12px rgba(0,255,136,0.15);
+
+            width: 500px;
         }
 
 
-        .map-card h2 {
+        .map-title {
 
             color: #00ff88;
 
             font-size: 22px;
 
+            font-weight: bold;
+
+            padding-bottom: 12px;
+
             margin-bottom: 12px;
 
             border-bottom: 1px solid #333;
-
-            padding-bottom: 10px;
         }
 
 
-        /* =========================
+        /* =====================================================
            MAP
-        ========================= */
+        ===================================================== */
 
         #map {
 
             width: 100%;
 
-            height: 400px;
+            height: 420px;
 
             border-radius: 10px;
+
+            overflow: hidden;
         }
 
 
-        /* =========================
-           GPS BOTTOM VALUES
-        ========================= */
+        /* =====================================================
+           MAP DATA BAR
+        ===================================================== */
 
         .map-data {
 
-            display: flex;
+            display: grid;
 
-            justify-content: space-around;
-
-            align-items: center;
-
-            background: #181818;
-
-            border-radius: 0 0 12px 12px;
+            grid-template-columns:
+                1fr
+                1fr
+                1fr
+                1fr;
 
             margin-top: 10px;
 
-            padding: 12px 5px;
+            background: #151515;
+
+            border-radius: 8px;
+
+            overflow: hidden;
         }
 
 
@@ -187,73 +278,95 @@
 
             text-align: center;
 
-            flex: 1;
-        }
-
-
-        .map-data-item:not(:last-child) {
+            padding: 12px 5px;
 
             border-right: 1px solid #333;
         }
 
 
-        .map-label {
+        .map-data-item:last-child {
 
-            display: block;
+            border-right: none;
+        }
 
-            color: #999;
 
-            font-size: 13px;
+        .map-data-label {
+
+            color: #bbbbbb;
+
+            font-size: 12px;
 
             margin-bottom: 5px;
         }
 
 
-        .map-value {
-
-            display: block;
+        .map-data-value {
 
             color: white;
 
-            font-weight: bold;
+            font-size: 14px;
 
-            font-size: 15px;
+            font-weight: bold;
         }
 
 
-        /* =========================
+        /* =====================================================
            RESPONSIVE
-        ========================= */
+        ===================================================== */
 
-        @media (max-width: 900px) {
+        @media (max-width: 1000px) {
 
             .dashboard {
 
-                min-height: auto;
-
-                display: flex;
-
-                flex-direction: column;
-
-                align-items: center;
-
-                gap: 25px;
-            }
-
-
-            .speed-card {
-
-                position: static;
+                grid-template-columns: 1fr;
 
             }
-
 
             .map-card {
 
-                position: static;
+                width: 100%;
 
-                width: min(470px, 100%);
+                max-width: 600px;
+
             }
+
+            .left-panel {
+
+                width: 100%;
+
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            body {
+
+                padding: 15px;
+
+            }
+
+            h1 {
+
+                font-size: 30px;
+
+            }
+
+            .dynamic-row {
+
+                grid-template-columns: 1fr;
+
+            }
+
+            .map-data {
+
+                grid-template-columns:
+                    1fr
+                    1fr;
+
+            }
+
         }
 
     </style>
@@ -270,36 +383,130 @@
 <div class="dashboard">
 
 
-    <!-- =========================
-         SPEED
-    ========================= -->
+    <!-- =====================================================
+         LEFT PANEL
+    ====================================================== -->
 
-    <div class="speed-card">
+    <div class="left-panel">
 
-        <h2>SPEED KM/HRS</h2>
 
-        <div class="speed-value">
+        <!-- SPEED -->
 
-            <span id="speed">0.00</span>
+        <div class="speed-card">
+
+            <div class="speed-title">
+                SPEED
+            </div>
+
+            <div class="speed-value"
+                 id="speed">
+
+                0.00
+
+            </div>
+
+            <div class="speed-unit">
+                km/h
+            </div>
 
         </div>
+
+
+
+        <!-- ACCELERATION / SLOPE / DECELERATION -->
+
+        <div class="dynamic-row">
+
+
+            <!-- ACCELERATION -->
+
+            <div class="dynamic-card">
+
+                <div class="dynamic-title">
+                    ACCELERATION
+                </div>
+
+                <div class="dynamic-value"
+                     id="acceleration">
+
+                    0.00
+
+                </div>
+
+                <div class="dynamic-unit">
+                    m/s²
+                </div>
+
+            </div>
+
+
+            <!-- SLOPE -->
+
+            <div class="dynamic-card">
+
+                <div class="dynamic-title">
+                    SLOPE
+                </div>
+
+                <div class="dynamic-value"
+                     id="slope">
+
+                    0.00
+
+                </div>
+
+                <div class="dynamic-unit">
+                    degrees
+                </div>
+
+            </div>
+
+
+            <!-- DECELERATION -->
+
+            <div class="dynamic-card">
+
+                <div class="dynamic-title">
+                    DECELERATION
+                </div>
+
+                <div class="dynamic-value"
+                     id="deceleration">
+
+                    0.00
+
+                </div>
+
+                <div class="dynamic-unit">
+                    m/s²
+                </div>
+
+            </div>
+
+
+        </div>
+
 
     </div>
 
 
 
-    <!-- =========================
-         LIVE MAP
-    ========================= -->
+    <!-- =====================================================
+         RIGHT SIDE MAP
+    ====================================================== -->
 
     <div class="map-card">
 
-        <h2>LIVE MAP</h2>
+
+        <div class="map-title">
+            LIVE MAP
+        </div>
+
 
         <div id="map"></div>
 
 
-        <!-- GPS VALUES UNDER MAP -->
+        <!-- MAP DATA -->
 
         <div class="map-data">
 
@@ -308,15 +515,16 @@
 
             <div class="map-data-item">
 
-                <span class="map-label">
+                <div class="map-data-label">
                     LONG
-                </span>
+                </div>
 
-                <span
-                    class="map-value"
-                    id="lon">
+                <div class="map-data-value"
+                     id="lon">
+
                     -
-                </span>
+
+                </div>
 
             </div>
 
@@ -325,15 +533,16 @@
 
             <div class="map-data-item">
 
-                <span class="map-label">
+                <div class="map-data-label">
                     LAT
-                </span>
+                </div>
 
-                <span
-                    class="map-value"
-                    id="lat">
+                <div class="map-data-value"
+                     id="lat">
+
                     -
-                </span>
+
+                </div>
 
             </div>
 
@@ -342,20 +551,40 @@
 
             <div class="map-data-item">
 
-                <span class="map-label">
+                <div class="map-data-label">
                     ALT
-                </span>
+                </div>
 
-                <span
-                    class="map-value"
-                    id="altitude">
+                <div class="map-data-value"
+                     id="altitude">
+
                     -
-                </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- DISTANCE -->
+
+            <div class="map-data-item">
+
+                <div class="map-data-label">
+                    DIST (m)
+                </div>
+
+                <div class="map-data-value"
+                     id="distance">
+
+                    -
+
+                </div>
 
             </div>
 
 
         </div>
+
 
     </div>
 
@@ -367,44 +596,56 @@
 <script>
 
 
-/* =====================================
+/* =========================================================
    SOCKET.IO
-===================================== */
+========================================================= */
 
 const socket = io();
 
 
 
-/* =====================================
+/* =========================================================
    LEAFLET MAP
-===================================== */
+========================================================= */
 
-const map = L.map('map').setView(
+const map = L.map("map", {
+
+    zoomControl: true,
+
+    scrollWheelZoom: true,
+
+    doubleClickZoom: true,
+
+    dragging: true
+
+}).setView(
     [11.0789, 76.9860],
-    20
+    18
 );
 
 
 
-/* =====================================
+/* =========================================================
    OPEN STREET MAP
-===================================== */
+========================================================= */
 
 L.tileLayer(
-    'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     {
-        attribution: '© OpenStreetMap'
+
+        maxZoom: 21,
+
+        attribution:
+            "&copy; OpenStreetMap"
+
     }
 ).addTo(map);
 
-map.scrollWheelZoom.enable();
-map.doubleClickZoom.enable();
-map.boxZoom.enable();
-map.keyboard.enable();
 
-/* =====================================
+
+/* =========================================================
    VEHICLE MARKER
-===================================== */
+========================================================= */
 
 let marker = L.marker(
     [11.0789, 76.9860]
@@ -412,93 +653,233 @@ let marker = L.marker(
 
 
 
-/* =====================================
+/* =========================================================
    VEHICLE ROUTE
-===================================== */
+========================================================= */
 
 let route = [];
+
 
 let polyline = L.polyline(
     route,
     {
-        color: 'lime',
-        weight: 4
+
+        color: "#00ff88",
+
+        weight: 4,
+
+        opacity: 0.9
+
     }
 ).addTo(map);
 
 
 
-/* =====================================
+/* =========================================================
+   FIRST GPS POSITION
+========================================================= */
+
+let firstPosition = true;
+
+
+
+/* =========================================================
    RECEIVE TELEMETRY
-===================================== */
+========================================================= */
 
 socket.on("telemetry", (data) => {
 
 
-    const lat = Number(data.lat);
+    /* -----------------------------------------------
+       SPEED
+    ------------------------------------------------ */
 
-    const lon = Number(data.lon);
+    if (data.speed !== undefined) {
 
-    const altitude = Number(data.altitude);
+        document.getElementById("speed")
+            .textContent =
+            Number(data.speed).toFixed(2);
 
-    const speed = Number(data.speed);
-
-
-
-    /* SPEED */
-
-    document.getElementById("speed").textContent =
-        speed.toFixed(2);
+    }
 
 
 
-    /* LATITUDE */
+    /* -----------------------------------------------
+       ACCELERATION
+    ------------------------------------------------ */
 
-    document.getElementById("lat").textContent =
-        lat.toFixed(6) + "°";
+    if (data.acceleration !== undefined) {
 
+        document.getElementById("acceleration")
+            .textContent =
+            Number(data.acceleration).toFixed(2);
 
-
-    /* LONGITUDE */
-
-    document.getElementById("lon").textContent =
-        lon.toFixed(6) + "°";
-
-
-
-    /* ALTITUDE */
-
-    document.getElementById("altitude").textContent =
-        altitude.toFixed(2) + " m";
+    }
 
 
 
-    /* MOVE VEHICLE */
+    /* -----------------------------------------------
+       DECELERATION
+    ------------------------------------------------ */
 
-    marker.setLatLng([
-        lat,
-        lon
-    ]);
+    if (data.deceleration !== undefined) {
 
+        document.getElementById("deceleration")
+            .textContent =
+            Number(data.deceleration).toFixed(2);
 
-
-    /* CENTER MAP ON VEHICLE */
-
-   map.panTo([lat, lon]);
-
-
-    /* ADD ROUTE */
-
-    route.push([
-        lat,
-        lon
-    ]);
+    }
 
 
 
-    polyline.setLatLngs(route);
+    /* -----------------------------------------------
+       SLOPE
+    ------------------------------------------------ */
+
+    if (data.slope !== undefined) {
+
+        document.getElementById("slope")
+            .textContent =
+            Number(data.slope).toFixed(2);
+
+    }
+
+
+
+    /* -----------------------------------------------
+       LATITUDE
+    ------------------------------------------------ */
+
+    if (data.lat !== undefined) {
+
+        document.getElementById("lat")
+            .textContent =
+            Number(data.lat).toFixed(6) + "°";
+
+    }
+
+
+
+    /* -----------------------------------------------
+       LONGITUDE
+    ------------------------------------------------ */
+
+    if (data.lon !== undefined) {
+
+        document.getElementById("lon")
+            .textContent =
+            Number(data.lon).toFixed(6) + "°";
+
+    }
+
+
+
+    /* -----------------------------------------------
+       ALTITUDE
+    ------------------------------------------------ */
+
+    if (data.altitude !== undefined) {
+
+        document.getElementById("altitude")
+            .textContent =
+            Number(data.altitude).toFixed(2) + " m";
+
+    }
+
+
+
+    /* -----------------------------------------------
+       DISTANCE
+    ------------------------------------------------ */
+
+    if (data.distance !== undefined) {
+
+        document.getElementById("distance")
+            .textContent =
+            Number(data.distance).toFixed(2);
+
+    }
+
+
+
+    /* =================================================
+       MAP POSITION
+    ================================================= */
+
+    if (
+        data.lat !== undefined &&
+        data.lon !== undefined
+    ) {
+
+
+        const latitude =
+            Number(data.lat);
+
+        const longitude =
+            Number(data.lon);
+
+
+
+        /* ---------------------------------------------
+           Validate GPS
+        --------------------------------------------- */
+
+        if (
+            !isNaN(latitude) &&
+            !isNaN(longitude) &&
+            latitude >= -90 &&
+            latitude <= 90 &&
+            longitude >= -180 &&
+            longitude <= 180
+        ) {
+
+
+            /* -----------------------------------------
+               Move vehicle marker
+            ----------------------------------------- */
+
+            marker.setLatLng([
+                latitude,
+                longitude
+            ]);
+
+
+
+            /* -----------------------------------------
+               Add route
+            ----------------------------------------- */
+
+            route.push([
+                latitude,
+                longitude
+            ]);
+
+            polyline.setLatLngs(route);
+
+
+
+            /* -----------------------------------------
+               Center map ONLY initially
+            ----------------------------------------- */
+
+            if (firstPosition) {
+
+                map.setView(
+                    [latitude, longitude],
+                    19
+                );
+
+                firstPosition = false;
+
+            }
+
+        }
+
+    }
+
 
 });
+
 
 </script>
 
