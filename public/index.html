@@ -30,11 +30,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
         }
 
 
@@ -60,7 +56,7 @@
 
             font-size: 40px;
 
-            margin-bottom: 35px;
+            margin-bottom: 30px;
         }
 
 
@@ -88,32 +84,32 @@
 
             border-radius: 12px;
 
+            border: 1px solid rgba(0,255,136,0.08);
+
             box-shadow:
                 0 0 12px rgba(0,255,136,0.15);
-
-            border: 1px solid rgba(0,255,136,0.08);
         }
 
 
         /* =====================================================
-           SPEED CARD
+           SPEED
         ===================================================== */
 
         .speed-card {
 
             position: absolute;
 
-            left: 27%;
+            left: 23%;
 
             top: 0;
 
-            width: 225px;
+            width: 230px;
 
             height: 150px;
 
             text-align: center;
 
-            padding: 20px;
+            padding: 22px;
         }
 
 
@@ -129,11 +125,9 @@
 
         .speed-value {
 
-            font-size: 34px;
+            font-size: 35px;
 
             font-weight: bold;
-
-            color: white;
         }
 
 
@@ -141,29 +135,30 @@
 
             color: #aaa;
 
-            margin-top: 5px;
-
             font-size: 14px;
+
+            margin-top: 5px;
         }
 
 
         /* =====================================================
            DYNAMICS ROW
+           ACCELERATION | TEMPERATURE | DECELERATION
         ===================================================== */
 
         .dynamics-row {
 
             position: absolute;
 
-            left: 5%;
+            left: 2%;
 
             top: 155px;
 
-            width: 55%;
+            width: 52%;
 
             display: flex;
 
-            gap: 15px;
+            gap: 12px;
         }
 
 
@@ -171,13 +166,11 @@
 
             flex: 1;
 
-            min-width: 0;
-
-            height: 115px;
+            height: 110px;
 
             text-align: center;
 
-            padding: 18px 10px;
+            padding: 18px 8px;
         }
 
 
@@ -196,8 +189,6 @@
             font-size: 27px;
 
             font-weight: bold;
-
-            color: white;
         }
 
 
@@ -212,59 +203,29 @@
 
 
         /* =====================================================
-           MOTOR TEMPERATURE
+           MAP STATUS
         ===================================================== */
 
-        .temperature-card {
+        .map-status {
 
             position: absolute;
 
-            left: 38%;
+            right: 14%;
 
-            top: 285px;
+            top: -25px;
 
-            width: 215px;
-
-            height: 125px;
-
-            text-align: center;
-
-            padding: 18px;
-        }
-
-
-        .temperature-card h2 {
-
-            color: #00ff88;
-
-            font-size: 16px;
-
-            margin-bottom: 12px;
-        }
-
-
-        .temperature-value {
-
-            font-size: 30px;
+            font-size: 14px;
 
             font-weight: bold;
 
-            color: white;
-        }
+            text-align: center;
 
-
-        .temperature-unit {
-
-            color: #aaa;
-
-            font-size: 13px;
-
-            margin-top: 4px;
+            color: #00ff88;
         }
 
 
         /* =====================================================
-           LIVE MAP CARD
+           MAP CARD
         ===================================================== */
 
         .map-card {
@@ -275,9 +236,9 @@
 
             top: 0;
 
-            width: 400px;
+            width: 410px;
 
-            height: 560px;
+            height: 590px;
 
             padding: 18px;
         }
@@ -338,10 +299,9 @@
 
             text-align: center;
 
-            padding: 10px 5px;
+            padding: 10px 4px;
 
-            border-right:
-                1px solid #333;
+            border-right: 1px solid #333;
         }
 
 
@@ -365,11 +325,60 @@
 
             color: white;
 
-            font-size: 14px;
+            font-size: 13px;
 
             font-weight: bold;
 
             white-space: nowrap;
+        }
+
+
+        /* =====================================================
+           SLOPE
+           BELOW MAP
+        ===================================================== */
+
+        .slope-card {
+
+            position: absolute;
+
+            right: 12%;
+
+            top: 610px;
+
+            width: 150px;
+
+            height: 80px;
+
+            text-align: center;
+
+            padding: 12px;
+        }
+
+
+        .slope-card h2 {
+
+            color: #00ff88;
+
+            font-size: 14px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .slope-value {
+
+            font-size: 24px;
+
+            font-weight: bold;
+        }
+
+
+        .slope-unit {
+
+            color: #aaa;
+
+            font-size: 11px;
         }
 
 
@@ -385,7 +394,7 @@
 
                 display: flex;
 
-                flex-wrap: wrap;
+                flex-direction: column;
 
                 gap: 20px;
             }
@@ -393,14 +402,13 @@
 
             .speed-card,
             .dynamics-row,
-            .temperature-card,
-            .map-card {
+            .map-card,
+            .slope-card,
+            .map-status {
 
                 position: static;
 
                 width: 100%;
-
-                height: auto;
             }
 
 
@@ -413,12 +421,22 @@
             .map-card {
 
                 max-width: 600px;
+
+                height: auto;
             }
 
 
             #map {
 
                 height: 400px;
+            }
+
+
+            .map-status {
+
+                text-align: left;
+
+                margin-bottom: -10px;
             }
         }
 
@@ -460,7 +478,7 @@
 
     <!-- =====================================================
          TITLE
-    ====================================================== -->
+    ===================================================== -->
 
     <h1>TEAM RENEW TELEMETRY</h1>
 
@@ -493,7 +511,7 @@
 
 
         <!-- =================================================
-             ACCELERATION / SLOPE / DECELERATION
+             ACCELERATION / TEMPERATURE / DECELERATION
         ================================================== -->
 
         <div class="dynamics-row">
@@ -521,14 +539,14 @@
             </div>
 
 
-            <!-- SLOPE -->
+            <!-- MOTOR TEMPERATURE -->
 
             <div class="card small-card">
 
-                <h2>SLOPE</h2>
+                <h2>TEMPERATURE</h2>
 
                 <div class="small-value"
-                     id="slope">
+                     id="motorTemperature">
 
                     --
 
@@ -536,7 +554,7 @@
 
                 <div class="small-unit">
 
-                    degrees
+                    °C
 
                 </div>
 
@@ -569,36 +587,25 @@
 
 
         <!-- =================================================
-             MOTOR TEMPERATURE
+             CONNECTION STATUS
         ================================================== -->
 
-        <div class="card temperature-card">
+        <div class="map-status"
+             id="connectionStatus">
 
-            <h2>MOTOR TEMPERATURE</h2>
-
-            <div class="temperature-value"
-                 id="motorTemperature">
-
-                --
-
-            </div>
-
-            <div class="temperature-unit">
-
-                °C
-
-            </div>
+            CONNECTED
 
         </div>
 
 
         <!-- =================================================
-             LIVE MAP
+             MAP
         ================================================== -->
 
         <div class="card map-card">
 
             <h2>LIVE MAP</h2>
+
 
             <div id="map"></div>
 
@@ -608,12 +615,14 @@
             <div class="map-info">
 
 
-                <!-- LONGITUDE -->
+                <!-- LONG -->
 
                 <div class="map-info-item">
 
                     <div class="map-info-label">
+
                         LONG
+
                     </div>
 
                     <div class="map-info-value"
@@ -626,12 +635,14 @@
                 </div>
 
 
-                <!-- LATITUDE -->
+                <!-- LAT -->
 
                 <div class="map-info-item">
 
                     <div class="map-info-label">
+
                         LAT
+
                     </div>
 
                     <div class="map-info-value"
@@ -644,12 +655,14 @@
                 </div>
 
 
-                <!-- ALTITUDE -->
+                <!-- ALT -->
 
                 <div class="map-info-item">
 
                     <div class="map-info-label">
+
                         ALT
+
                     </div>
 
                     <div class="map-info-value"
@@ -667,7 +680,9 @@
                 <div class="map-info-item">
 
                     <div class="map-info-label">
+
                         DIST (m)
+
                     </div>
 
                     <div class="map-info-value"
@@ -685,12 +700,36 @@
         </div>
 
 
+        <!-- =================================================
+             SLOPE
+        ================================================== -->
+
+        <div class="card slope-card">
+
+            <h2>SLOPE</h2>
+
+            <div class="slope-value"
+                 id="slope">
+
+                --
+
+            </div>
+
+            <div class="slope-unit">
+
+                degrees
+
+            </div>
+
+        </div>
+
+
     </div>
 
 
     <!-- =====================================================
          JAVASCRIPT
-    ====================================================== -->
+    ===================================================== -->
 
     <script>
 
@@ -703,8 +742,39 @@
 
 
         // ====================================================
-        // DEFAULT MAP LOCATION
-        // KCT / Coimbatore
+        // CONNECTION STATUS
+        // ====================================================
+
+        const connectionStatus =
+            document.getElementById(
+                "connectionStatus"
+            );
+
+
+        socket.on("connect", () => {
+
+            connectionStatus.textContent =
+                "CONNECTED";
+
+            connectionStatus.style.color =
+                "#00ff88";
+
+        });
+
+
+        socket.on("disconnect", () => {
+
+            connectionStatus.textContent =
+                "DISCONNECTED";
+
+            connectionStatus.style.color =
+                "#ff4444";
+
+        });
+
+
+        // ====================================================
+        // DEFAULT GPS LOCATION
         // ====================================================
 
         const defaultLat = 11.0789;
@@ -742,7 +812,7 @@
 
 
         // ====================================================
-        // OPENSTREETMAP
+        // OPEN STREET MAP
         // ====================================================
 
         L.tileLayer(
@@ -769,13 +839,16 @@
 
         let marker = L.marker(
 
-            [defaultLat, defaultLon]
+            [
+                defaultLat,
+                defaultLon
+            ]
 
         ).addTo(map);
 
 
         // ====================================================
-        // VEHICLE ROUTE
+        // ROUTE
         // ====================================================
 
         let route = [];
@@ -787,7 +860,7 @@
 
             {
 
-                color: "lime",
+                color: "#00ff88",
 
                 weight: 4,
 
@@ -799,7 +872,7 @@
 
 
         // ====================================================
-        // TELEMETRY
+        // RECEIVE TELEMETRY
         // ====================================================
 
         socket.on("telemetry", (data) => {
@@ -836,17 +909,20 @@
 
 
             // ------------------------------------------------
-            // SLOPE
+            // MOTOR TEMPERATURE
             // ------------------------------------------------
 
-            if (data.slope !== undefined) {
+            if (
+                data.motor_temperature !== undefined
+            ) {
 
                 document.getElementById(
-                    "slope"
+                    "motorTemperature"
                 ).textContent =
 
-                    Number(data.slope)
-                    .toFixed(2);
+                    Number(
+                        data.motor_temperature
+                    ).toFixed(2);
             }
 
 
@@ -866,32 +942,17 @@
 
 
             // ------------------------------------------------
-            // MOTOR TEMPERATURE
+            // SLOPE
             // ------------------------------------------------
 
-            if (data.motor_temperature !== undefined) {
+            if (data.slope !== undefined) {
 
                 document.getElementById(
-                    "motorTemperature"
+                    "slope"
                 ).textContent =
 
-                    Number(data.motor_temperature)
+                    Number(data.slope)
                     .toFixed(2);
-            }
-
-
-            // ------------------------------------------------
-            // LATITUDE
-            // ------------------------------------------------
-
-            if (data.lat !== undefined) {
-
-                document.getElementById(
-                    "lat"
-                ).textContent =
-
-                    Number(data.lat)
-                    .toFixed(6) + "°";
             }
 
 
@@ -906,6 +967,21 @@
                 ).textContent =
 
                     Number(data.lon)
+                    .toFixed(6) + "°";
+            }
+
+
+            // ------------------------------------------------
+            // LATITUDE
+            // ------------------------------------------------
+
+            if (data.lat !== undefined) {
+
+                document.getElementById(
+                    "lat"
+                ).textContent =
+
+                    Number(data.lat)
                     .toFixed(6) + "°";
             }
 
@@ -941,7 +1017,7 @@
 
 
             // =================================================
-            // UPDATE MAP
+            // UPDATE GPS MAP
             // =================================================
 
             if (
@@ -958,23 +1034,28 @@
                     Number(data.lon);
 
 
-                // ------------------------------------------------
-                // Validate GPS coordinates
-                // ------------------------------------------------
+                // Check GPS validity
 
                 if (
+
                     !isNaN(latitude) &&
+
                     !isNaN(longitude) &&
+
                     latitude >= -90 &&
+
                     latitude <= 90 &&
+
                     longitude >= -180 &&
+
                     longitude <= 180
+
                 ) {
 
 
-                    // --------------------------------------------
+                    // -----------------------------------------
                     // Move marker
-                    // --------------------------------------------
+                    // -----------------------------------------
 
                     marker.setLatLng(
 
@@ -986,9 +1067,9 @@
                     );
 
 
-                    // --------------------------------------------
-                    // Add point to route
-                    // --------------------------------------------
+                    // -----------------------------------------
+                    // Add route point
+                    // -----------------------------------------
 
                     route.push(
 
@@ -1000,16 +1081,16 @@
                     );
 
 
-                    // --------------------------------------------
+                    // -----------------------------------------
                     // Update route
-                    // --------------------------------------------
+                    // -----------------------------------------
 
                     polyline.setLatLngs(route);
 
 
-                    // --------------------------------------------
+                    // -----------------------------------------
                     // Follow vehicle
-                    // --------------------------------------------
+                    // -----------------------------------------
 
                     map.panTo(
 
