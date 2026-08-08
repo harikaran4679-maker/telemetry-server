@@ -397,7 +397,10 @@ L.tileLayer(
     }
 ).addTo(map);
 
-
+map.scrollWheelZoom.enable();
+map.doubleClickZoom.enable();
+map.boxZoom.enable();
+map.keyboard.enable();
 
 /* =====================================
    VEHICLE MARKER
@@ -481,11 +484,7 @@ socket.on("telemetry", (data) => {
 
     /* CENTER MAP ON VEHICLE */
 
-    map.setView(
-        [lat, lon],
-        20
-    );
-
+   map.panTo([lat, lon]);
 
 
     /* ADD ROUTE */
