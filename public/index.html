@@ -52,7 +52,7 @@
 
         h1 {
 
-            color: #00ff88;
+            color: #00aaff;
 
             font-size: 40px;
 
@@ -70,7 +70,7 @@
 
             width: 100%;
 
-            min-height: 620px;
+            min-height: 700px;
         }
 
 
@@ -84,10 +84,10 @@
 
             border-radius: 12px;
 
-            border: 1px solid rgba(0,255,136,0.08);
+            border: 1px solid rgba(0, 170, 255, 0.12);
 
             box-shadow:
-                0 0 12px rgba(0,255,136,0.15);
+                0 0 12px rgba(0, 170, 255, 0.15);
         }
 
 
@@ -115,7 +115,7 @@
 
         .speed-card h2 {
 
-            color: #00ff88;
+            color: #00aaff;
 
             font-size: 18px;
 
@@ -143,7 +143,6 @@
 
         /* =====================================================
            DYNAMICS ROW
-           ACCELERATION | TEMPERATURE | DECELERATION
         ===================================================== */
 
         .dynamics-row {
@@ -176,7 +175,7 @@
 
         .small-card h2 {
 
-            color: #00ff88;
+            color: #00aaff;
 
             font-size: 15px;
 
@@ -203,7 +202,7 @@
 
 
         /* =====================================================
-           MAP STATUS
+           ESP32 CONNECTION STATUS
         ===================================================== */
 
         .map-status {
@@ -220,7 +219,7 @@
 
             text-align: center;
 
-            color: #00ff88;
+            color: #ff4444;
         }
 
 
@@ -246,7 +245,7 @@
 
         .map-card h2 {
 
-            color: #00ff88;
+            color: #00aaff;
 
             font-size: 20px;
 
@@ -335,7 +334,6 @@
 
         /* =====================================================
            SLOPE
-           BELOW MAP
         ===================================================== */
 
         .slope-card {
@@ -358,7 +356,7 @@
 
         .slope-card h2 {
 
-            color: #00ff88;
+            color: #00aaff;
 
             font-size: 14px;
 
@@ -587,19 +585,19 @@
 
 
         <!-- =================================================
-             CONNECTION STATUS
+             ESP32 CONNECTION STATUS
         ================================================== -->
 
         <div class="map-status"
              id="connectionStatus">
 
-            CONNECTED
+            DISCONNECTED
 
         </div>
 
 
         <!-- =================================================
-             MAP
+             LIVE MAP
         ================================================== -->
 
         <div class="card map-card">
@@ -615,7 +613,7 @@
             <div class="map-info">
 
 
-                <!-- LONG -->
+                <!-- LONGITUDE -->
 
                 <div class="map-info-item">
 
@@ -635,7 +633,7 @@
                 </div>
 
 
-                <!-- LAT -->
+                <!-- LATITUDE -->
 
                 <div class="map-info-item">
 
@@ -655,7 +653,7 @@
                 </div>
 
 
-                <!-- ALT -->
+                <!-- ALTITUDE -->
 
                 <div class="map-info-item">
 
@@ -742,7 +740,7 @@
 
 
         // ====================================================
-        // CONNECTION STATUS
+        // ESP32 TELEMETRY CONNECTION STATUS
         // ====================================================
 
         const connectionStatus =
@@ -751,30 +749,65 @@
             );
 
 
-        socket.on("connect", () => {
+        // Last time telemetry was received
 
-            connectionStatus.textContent =
-                "CONNECTED";
-
-            connectionStatus.style.color =
-                "#00ff88";
-
-        });
+        let lastTelemetryTime = 0;
 
 
-        socket.on("disconnect", () => {
+        // ESP32 timeout
 
-            connectionStatus.textContent =
-                "DISCONNECTED";
-
-            connectionStatus.style.color =
-                "#ff4444";
-
-        });
+        const TELEMETRY_TIMEOUT = 3000;
 
 
         // ====================================================
-        // DEFAULT GPS LOCATION
+        // UPDATE ESP32 CONNECTION STATUS
+        // ====================================================
+
+        function updateConnectionStatus() {
+
+            const now = Date.now();
+
+
+            if (
+
+                lastTelemetryTime !== 0 &&
+
+                (now - lastTelemetryTime)
+                    <= TELEMETRY_TIMEOUT
+
+            ) {
+
+                connectionStatus.textContent =
+                    "CONNECTED";
+
+                connectionStatus.style.color =
+                    "#00aaff";
+
+            }
+
+            else {
+
+                connectionStatus.textContent =
+                    "DISCONNECTED";
+
+                connectionStatus.style.color =
+                    "#ff4444";
+
+            }
+
+        }
+
+
+        // Check every 500 ms
+
+        setInterval(
+            updateConnectionStatus,
+            500
+        );
+
+
+        // ====================================================
+        // DEFAULT MAP LOCATION
         // ====================================================
 
         const defaultLat = 11.0789;
@@ -786,25 +819,31 @@
         // CREATE MAP
         // ====================================================
 
-        const map = L.map("map", {
+        const map = L.map(
+            "map",
+            {
 
-            zoomControl: true,
+                zoomControl: true,
 
-            scrollWheelZoom: true,
+                scrollWheelZoom: true,
 
-            doubleClickZoom: true,
+                doubleClickZoom: true,
 
-            dragging: true,
+                dragging: true,
 
-            touchZoom: true,
+                touchZoom: true,
 
-            boxZoom: true,
+                boxZoom: true,
 
-            keyboard: true
+                keyboard: true
 
-        }).setView(
+            }
+        ).setView(
 
-            [defaultLat, defaultLon],
+            [
+                defaultLat,
+                defaultLon
+            ],
 
             19
 
@@ -848,7 +887,7 @@
 
 
         // ====================================================
-        // ROUTE
+        // VEHICLE ROUTE
         // ====================================================
 
         let route = [];
@@ -860,7 +899,7 @@
 
             {
 
-                color: "#00ff88",
+                color: "#00aaff",
 
                 weight: 4,
 
@@ -875,245 +914,299 @@
         // RECEIVE TELEMETRY
         // ====================================================
 
-        socket.on("telemetry", (data) => {
+        socket.on(
+            "telemetry",
+            (data) => {
 
 
-            // ------------------------------------------------
-            // SPEED
-            // ------------------------------------------------
+                // ============================================
+                // ESP32 TELEMETRY RECEIVED
+                // ============================================
 
-            if (data.speed !== undefined) {
-
-                document.getElementById(
-                    "speed"
-                ).textContent =
-
-                    Number(data.speed)
-                    .toFixed(2);
-            }
+                lastTelemetryTime =
+                    Date.now();
 
 
-            // ------------------------------------------------
-            // ACCELERATION
-            // ------------------------------------------------
+                // ============================================
+                // SPEED
+                // ============================================
 
-            if (data.acceleration !== undefined) {
+                if (
+                    data.speed !== undefined
+                ) {
 
-                document.getElementById(
-                    "acceleration"
-                ).textContent =
+                    document.getElementById(
+                        "speed"
+                    ).textContent =
 
-                    Number(data.acceleration)
-                    .toFixed(2);
-            }
+                        Number(
+                            data.speed
+                        ).toFixed(2);
 
-
-            // ------------------------------------------------
-            // MOTOR TEMPERATURE
-            // ------------------------------------------------
-
-            if (
-                data.motor_temperature !== undefined
-            ) {
-
-                document.getElementById(
-                    "motorTemperature"
-                ).textContent =
-
-                    Number(
-                        data.motor_temperature
-                    ).toFixed(2);
-            }
+                }
 
 
-            // ------------------------------------------------
-            // DECELERATION
-            // ------------------------------------------------
+                // ============================================
+                // ACCELERATION
+                // ============================================
 
-            if (data.deceleration !== undefined) {
+                if (
+                    data.acceleration !== undefined
+                ) {
 
-                document.getElementById(
-                    "deceleration"
-                ).textContent =
+                    document.getElementById(
+                        "acceleration"
+                    ).textContent =
 
-                    Number(data.deceleration)
-                    .toFixed(2);
-            }
+                        Number(
+                            data.acceleration
+                        ).toFixed(2);
 
-
-            // ------------------------------------------------
-            // SLOPE
-            // ------------------------------------------------
-
-            if (data.slope !== undefined) {
-
-                document.getElementById(
-                    "slope"
-                ).textContent =
-
-                    Number(data.slope)
-                    .toFixed(2);
-            }
+                }
 
 
-            // ------------------------------------------------
-            // LONGITUDE
-            // ------------------------------------------------
+                // ============================================
+                // MOTOR TEMPERATURE
+                // ============================================
 
-            if (data.lon !== undefined) {
+                if (
+                    data.motor_temperature
+                    !== undefined
+                ) {
 
-                document.getElementById(
-                    "lon"
-                ).textContent =
+                    document.getElementById(
+                        "motorTemperature"
+                    ).textContent =
 
-                    Number(data.lon)
-                    .toFixed(6) + "°";
-            }
+                        Number(
+                            data.motor_temperature
+                        ).toFixed(2);
 
-
-            // ------------------------------------------------
-            // LATITUDE
-            // ------------------------------------------------
-
-            if (data.lat !== undefined) {
-
-                document.getElementById(
-                    "lat"
-                ).textContent =
-
-                    Number(data.lat)
-                    .toFixed(6) + "°";
-            }
+                }
 
 
-            // ------------------------------------------------
-            // ALTITUDE
-            // ------------------------------------------------
+                // ============================================
+                // DECELERATION
+                // ============================================
 
-            if (data.altitude !== undefined) {
+                if (
+                    data.deceleration
+                    !== undefined
+                ) {
 
-                document.getElementById(
-                    "altitude"
-                ).textContent =
+                    document.getElementById(
+                        "deceleration"
+                    ).textContent =
 
-                    Number(data.altitude)
-                    .toFixed(2) + " m";
-            }
+                        Number(
+                            data.deceleration
+                        ).toFixed(2);
 
-
-            // ------------------------------------------------
-            // DISTANCE
-            // ------------------------------------------------
-
-            if (data.distance !== undefined) {
-
-                document.getElementById(
-                    "distance"
-                ).textContent =
-
-                    Number(data.distance)
-                    .toFixed(2);
-            }
+                }
 
 
-            // =================================================
-            // UPDATE GPS MAP
-            // =================================================
+                // ============================================
+                // SLOPE
+                // ============================================
 
-            if (
-                data.lat !== undefined &&
-                data.lon !== undefined
-            ) {
+                if (
+                    data.slope !== undefined
+                ) {
+
+                    document.getElementById(
+                        "slope"
+                    ).textContent =
+
+                        Number(
+                            data.slope
+                        ).toFixed(2);
+
+                }
 
 
-                const latitude =
-                    Number(data.lat);
+                // ============================================
+                // LONGITUDE
+                // ============================================
+
+                if (
+                    data.lon !== undefined
+                ) {
+
+                    document.getElementById(
+                        "lon"
+                    ).textContent =
+
+                        Number(
+                            data.lon
+                        ).toFixed(6)
+                        + "°";
+
+                }
 
 
-                const longitude =
-                    Number(data.lon);
+                // ============================================
+                // LATITUDE
+                // ============================================
+
+                if (
+                    data.lat !== undefined
+                ) {
+
+                    document.getElementById(
+                        "lat"
+                    ).textContent =
+
+                        Number(
+                            data.lat
+                        ).toFixed(6)
+                        + "°";
+
+                }
 
 
-                // Check GPS validity
+                // ============================================
+                // ALTITUDE
+                // ============================================
+
+                if (
+                    data.altitude !== undefined
+                ) {
+
+                    document.getElementById(
+                        "altitude"
+                    ).textContent =
+
+                        Number(
+                            data.altitude
+                        ).toFixed(2)
+                        + " m";
+
+                }
+
+
+                // ============================================
+                // DISTANCE
+                // ============================================
+
+                if (
+                    data.distance !== undefined
+                ) {
+
+                    document.getElementById(
+                        "distance"
+                    ).textContent =
+
+                        Number(
+                            data.distance
+                        ).toFixed(2);
+
+                }
+
+
+                // ============================================
+                // UPDATE LIVE MAP
+                // ============================================
 
                 if (
 
-                    !isNaN(latitude) &&
+                    data.lat !== undefined &&
 
-                    !isNaN(longitude) &&
-
-                    latitude >= -90 &&
-
-                    latitude <= 90 &&
-
-                    longitude >= -180 &&
-
-                    longitude <= 180
+                    data.lon !== undefined
 
                 ) {
 
 
-                    // -----------------------------------------
-                    // Move marker
-                    // -----------------------------------------
-
-                    marker.setLatLng(
-
-                        [
-                            latitude,
-                            longitude
-                        ]
-
-                    );
+                    const latitude =
+                        Number(data.lat);
 
 
-                    // -----------------------------------------
-                    // Add route point
-                    // -----------------------------------------
-
-                    route.push(
-
-                        [
-                            latitude,
-                            longitude
-                        ]
-
-                    );
+                    const longitude =
+                        Number(data.lon);
 
 
-                    // -----------------------------------------
-                    // Update route
-                    // -----------------------------------------
+                    // Check GPS values
 
-                    polyline.setLatLngs(route);
+                    if (
+
+                        !isNaN(latitude) &&
+
+                        !isNaN(longitude) &&
+
+                        latitude >= -90 &&
+
+                        latitude <= 90 &&
+
+                        longitude >= -180 &&
+
+                        longitude <= 180
+
+                    ) {
 
 
-                    // -----------------------------------------
-                    // Follow vehicle
-                    // -----------------------------------------
+                        // ------------------------------------
+                        // MOVE VEHICLE MARKER
+                        // ------------------------------------
 
-                    map.panTo(
+                        marker.setLatLng(
 
-                        [
-                            latitude,
-                            longitude
-                        ],
+                            [
+                                latitude,
+                                longitude
+                            ]
 
-                        {
+                        );
 
-                            animate: true,
 
-                            duration: 0.5
+                        // ------------------------------------
+                        // ADD ROUTE POINT
+                        // ------------------------------------
 
-                        }
+                        route.push(
 
-                    );
+                            [
+                                latitude,
+                                longitude
+                            ]
+
+                        );
+
+
+                        // ------------------------------------
+                        // UPDATE ROUTE
+                        // ------------------------------------
+
+                        polyline.setLatLngs(
+                            route
+                        );
+
+
+                        // ------------------------------------
+                        // FOLLOW VEHICLE
+                        // ------------------------------------
+
+                        map.panTo(
+
+                            [
+                                latitude,
+                                longitude
+                            ],
+
+                            {
+
+                                animate: true,
+
+                                duration: 0.5
+
+                            }
+
+                        );
+
+                    }
 
                 }
 
             }
-
-        });
+        );
 
 
     </script>
