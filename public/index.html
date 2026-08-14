@@ -1,177 +1,3088 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Team Renew Telemetry</title>
-  <script src="/socket.io/socket.io.js"></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ5x7JzKzpUgyU6uPz1kC/2A4gBwlw4=" crossorigin="">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="" defer></script>
-  <style>
-    :root { color-scheme: dark; --blue:#00aaff; --green:#45d483; --red:#ff6868; --bg:#111; --card:#1f1f1f; --muted:#9ba8b3; }
-    * { box-sizing:border-box; margin:0; padding:0; font-family:Arial, Helvetica, sans-serif; }
-    body { min-height:100vh; background:var(--bg); color:#fff; padding:clamp(16px, 3vw, 30px); }
-    header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:24px; }
-    h1 { color:var(--blue); font-size:clamp(25px, 4vw, 40px); }
-    .connection { display:flex; align-items:center; gap:9px; color:var(--muted); font-size:14px; white-space:nowrap; }
-    .dot { width:10px; height:10px; border-radius:50%; background:var(--red); box-shadow:0 0 8px var(--red); }
-    .connection.online .dot { background:var(--green); box-shadow:0 0 8px var(--green); }
-    .dashboard { display:grid; grid-template-columns:repeat(12, minmax(0, 1fr)); gap:18px; max-width:1600px; margin:auto; }
-    .card { background:var(--card); border:1px solid rgba(0,170,255,.18); border-radius:12px; box-shadow:0 0 12px rgba(0,170,255,.12); padding:18px; }
-    .vehicle { grid-column:span 5; } .motor { grid-column:span 4; } .fuel-cell { grid-column:span 3; } .gps { grid-column:span 4; } .map-card { grid-column:span 8; }
-    h2 { color:var(--blue); font-size:16px; letter-spacing:.6px; margin-bottom:16px; text-transform:uppercase; }
-    .metrics { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
-    .vehicle .metrics { grid-template-columns:repeat(3, minmax(0, 1fr)); }
-    .metric { min-width:0; padding:12px; background:#171717; border-radius:9px; border:1px solid rgba(255,255,255,.05); }
-    .label { display:block; color:var(--muted); font-size:11px; letter-spacing:.25px; line-height:1.25; }
-    .value { display:block; margin-top:6px; color:#fff; font-size:clamp(17px, 2vw, 22px); font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .unit { color:var(--muted); font-size:11px; font-weight:normal; }
-    .speed { border-color:rgba(0,170,255,.38); } .speed .value { color:var(--blue); font-size:30px; }
-    .error-ok { color:var(--green); } .error-active { color:var(--red); }
-    #map { height:390px; width:100%; border-radius:8px; background:#171717; }
-    .map-tools { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
-    .map-tools p { color:var(--muted); font-size:12px; }
-    button { border:1px solid rgba(0,170,255,.5); border-radius:6px; padding:7px 10px; color:#dff5ff; background:#12303d; cursor:pointer; }
-    button:hover { background:#174354; }
-    .footnote { grid-column:1 / -1; color:var(--muted); font-size:12px; text-align:right; }
-    @media (max-width:1050px) { .vehicle,.motor,.fuel-cell,.gps,.map-card { grid-column:span 6; } .map-card { grid-column:span 12; } }
-    @media (max-width:650px) { header { align-items:flex-start; flex-direction:column; } .vehicle,.motor,.fuel-cell,.gps,.map-card { grid-column:1 / -1; } .vehicle .metrics { grid-template-columns:repeat(2, minmax(0, 1fr)); } #map { height:310px; } }
-  </style>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Team ReNew Telemetry</title>
+
+    <!-- =====================================================
+         SOCKET.IO
+         ===================================================== -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- =====================================================
+         LEAFLET
+         ===================================================== -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ></script>
+
+
+    <style>
+
+        /* =====================================================
+           ROOT
+           ===================================================== */
+
+        :root {
+
+            --bg: #070707;
+
+            --panel: #111111;
+
+            --panel-dark: #0c0c0c;
+
+            --panel-light: #181818;
+
+            --border: #252525;
+
+            --white: #f5f5f5;
+
+            --gray: #888;
+
+            --cyan: #00aaff;
+
+            --blue: #008cff;
+
+            --green: #00e676;
+
+            --red: #e10600;
+
+            --yellow: #ffd000;
+
+        }
+
+
+        /* =====================================================
+           GLOBAL
+           ===================================================== */
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+
+        html,
+        body {
+
+            width: 100%;
+
+            height: 100%;
+
+            overflow: hidden;
+
+            background: var(--bg);
+
+            color: var(--white);
+
+        }
+
+
+        body {
+
+            padding: 10px;
+
+        }
+
+
+        /* =====================================================
+           MAIN DASHBOARD
+           ===================================================== */
+
+        .dashboard {
+
+            width: 100%;
+
+            height: calc(100vh - 20px);
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 2fr)
+                minmax(380px, 1fr);
+
+            grid-template-rows:
+                auto
+                auto
+                1fr;
+
+            gap: 8px;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =====================================================
+           COMMON PANEL
+           ===================================================== */
+
+        .panel {
+
+            background:
+                linear-gradient(
+                    145deg,
+                    #151515,
+                    #0c0c0c
+                );
+
+            border: 1px solid #303030;
+
+            box-shadow:
+                0 0 0 1px rgba(255,255,255,0.02),
+                inset 0 0 30px rgba(0,0,0,0.45);
+
+            border-radius: 5px;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =====================================================
+           LEFT AREA
+           ===================================================== */
+
+        .left-area {
+
+            grid-column: 1;
+
+            grid-row: 1 / span 3;
+
+            display: grid;
+
+            grid-template-rows:
+                58px
+                48px
+                112px
+                48px
+                minmax(0, 1fr);
+
+            gap: 8px;
+
+            min-width: 0;
+
+            min-height: 0;
+
+        }
+
+
+        /* =====================================================
+           HEADER
+           ===================================================== */
+
+        .header {
+
+            display: grid;
+
+            grid-template-columns:
+                150px
+                1fr
+                150px;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .logo-box {
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #0d0d0d;
+
+            border: 1px solid #303030;
+
+            border-radius: 5px;
+
+            overflow: hidden;
+
+        }
+
+
+        .team-logo {
+
+            max-height: 48px;
+
+            max-width: 135px;
+
+            object-fit: contain;
+
+        }
+
+
+        .title-box {
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            background: #111;
+
+            border: 1px solid #303030;
+
+            border-radius: 5px;
+
+        }
+
+
+        .title {
+
+            font-size: clamp(24px, 2.5vw, 42px);
+
+            font-weight: 900;
+
+            letter-spacing: 3px;
+
+            color: white;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .title span {
+
+            color: var(--cyan);
+
+        }
+
+
+        /* =====================================================
+           CONNECTION
+           ===================================================== */
+
+        .connection {
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            border: 1px solid #303030;
+
+            background: #111;
+
+            border-radius: 5px;
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+        }
+
+
+        .connection-dot {
+
+            width: 9px;
+
+            height: 9px;
+
+            border-radius: 50%;
+
+            background: var(--red);
+
+            box-shadow: 0 0 8px var(--red);
+
+        }
+
+
+        .connection.connected {
+
+            color: var(--green);
+
+        }
+
+
+        .connection.connected .connection-dot {
+
+            background: var(--green);
+
+            box-shadow:
+                0 0 8px var(--green);
+
+        }
+
+
+        /* =====================================================
+           THROTTLE
+           ===================================================== */
+
+        .throttle-panel {
+
+            display: grid;
+
+            grid-template-columns:
+                100px
+                1fr
+                75px;
+
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 8px 12px;
+
+        }
+
+
+        .section-label {
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            letter-spacing: 1.5px;
+
+            color: #aaa;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .throttle-track {
+
+            height: 18px;
+
+            background: #222;
+
+            border: 1px solid #444;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        .throttle-fill {
+
+            width: 0%;
+
+            height: 100%;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #0077aa,
+                    #00aaff
+                );
+
+            transition: width 0.15s linear;
+
+            box-shadow:
+                0 0 12px rgba(0,170,255,0.5);
+
+        }
+
+
+        .throttle-value {
+
+            text-align: right;
+
+            font-size: 14px;
+
+            font-weight: bold;
+
+            color: white;
+
+        }
+
+
+        /* =====================================================
+           MAIN METRICS
+           ===================================================== */
+
+        .main-metrics {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 8px;
+
+            min-width: 0;
+
+        }
+
+
+        .metric {
+
+            background: #101010;
+
+            border: 1px solid #303030;
+
+            border-radius: 5px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        .metric::before {
+
+            content: "";
+
+            position: absolute;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 3px;
+
+            background: var(--cyan);
+
+        }
+
+
+        .metric-label {
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            color: #aaa;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+            margin-bottom: 8px;
+
+        }
+
+
+        .metric-value {
+
+            font-size: clamp(25px, 3vw, 44px);
+
+            font-weight: 900;
+
+            color: white;
+
+            line-height: 1;
+
+        }
+
+
+        .speed-metric .metric-value {
+
+            color: var(--cyan);
+
+        }
+
+
+        .metric-unit {
+
+            font-size: 10px;
+
+            color: #777;
+
+            margin-top: 6px;
+
+        }
+
+
+        /* =====================================================
+           SMALL METRICS
+           ===================================================== */
+
+        .small-metrics {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 8px;
+
+        }
+
+
+        .small-metric {
+
+            background: #101010;
+
+            border: 1px solid #303030;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 8px;
+
+            border-radius: 5px;
+
+        }
+
+
+        .small-label {
+
+            color: #888;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .small-value {
+
+            color: white;
+
+            font-size: 16px;
+
+            font-weight: bold;
+
+        }
+
+
+        .small-unit {
+
+            color: #777;
+
+            font-size: 9px;
+
+        }
+
+
+        /* =====================================================
+           LOWER INFORMATION AREA
+           ===================================================== */
+
+        .info-area {
+
+            display: grid;
+
+            grid-template-columns:
+                1fr
+                1fr
+                1fr;
+
+            gap: 8px;
+
+            min-height: 0;
+
+        }
+
+
+        .info-panel {
+
+            background: #101010;
+
+            border: 1px solid #303030;
+
+            border-radius: 5px;
+
+            overflow: hidden;
+
+            min-height: 0;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+
+        .info-header {
+
+            height: 38px;
+
+            flex-shrink: 0;
+
+            display: flex;
+
+            align-items: center;
+
+            padding: 0 12px;
+
+            border-bottom: 1px solid #333;
+
+            color: var(--cyan);
+
+            font-size: 12px;
+
+            font-weight: bold;
+
+            text-transform: uppercase;
+
+            letter-spacing: 1px;
+
+        }
+
+
+        .info-content {
+
+            padding: 8px 12px;
+
+            overflow: auto;
+
+            flex: 1;
+
+        }
+
+
+        /* =====================================================
+           TABLE
+           ===================================================== */
+
+        .data-row {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            min-height: 30px;
+
+            border-bottom: 1px solid #222;
+
+            font-size: 11px;
+
+        }
+
+
+        .data-row:last-child {
+
+            border-bottom: none;
+
+        }
+
+
+        .data-name {
+
+            color: #888;
+
+        }
+
+
+        .data-value {
+
+            color: white;
+
+            font-weight: bold;
+
+        }
+
+
+        .data-value.warning {
+
+            color: var(--yellow);
+
+        }
+
+
+        .data-value.error {
+
+            color: var(--red);
+
+        }
+
+
+        .data-value.normal {
+
+            color: var(--green);
+
+        }
+
+
+        /* =====================================================
+           WARNING PANEL
+           ===================================================== */
+
+        .warning-content {
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            text-align: center;
+
+            padding: 20px;
+
+        }
+
+
+        .system-message {
+
+            font-size: 16px;
+
+            font-weight: 900;
+
+            letter-spacing: 1px;
+
+            color: var(--green);
+
+            text-transform: uppercase;
+
+        }
+
+
+        .system-message.warning {
+
+            color: var(--yellow);
+
+        }
+
+
+        .system-message.error {
+
+            color: var(--red);
+
+        }
+
+
+        /* =====================================================
+           RIGHT MAP AREA
+           ===================================================== */
+
+        .map-area {
+
+            grid-column: 2;
+
+            grid-row: 1 / span 3;
+
+            display: grid;
+
+            grid-template-rows:
+                50px
+                minmax(0, 1fr)
+                45px;
+
+            min-width: 0;
+
+            min-height: 0;
+
+            background: #0c0c0c;
+
+            border: 1px solid #303030;
+
+            border-radius: 5px;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =====================================================
+           SLOPE HEADER
+           ===================================================== */
+
+        .slope-header {
+
+            display: grid;
+
+            grid-template-columns: 120px 1fr;
+
+            align-items: center;
+
+            padding: 7px 10px;
+
+            border-bottom: 1px solid #303030;
+
+            background: #111;
+
+        }
+
+
+        .slope-label {
+
+            height: 30px;
+
+            display: flex;
+
+            align-items: center;
+
+            padding-left: 10px;
+
+            border: 1px solid #555;
+
+            font-size: 11px;
+
+            font-weight: bold;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .slope-value {
+
+            text-align: right;
+
+            font-size: 22px;
+
+            font-weight: 900;
+
+            padding-right: 8px;
+
+        }
+
+
+        /* =====================================================
+           MAP CONTAINER
+           ===================================================== */
+
+        .map-wrapper {
+
+            position: relative;
+
+            min-height: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            overflow: hidden;
+
+            background: #151515;
+
+        }
+
+
+        #map {
+
+            position: absolute;
+
+            inset: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            min-height: 0;
+
+            background: #151515;
+
+        }
+
+
+        /* =====================================================
+           CLEAR ROUTE BUTTON
+           ===================================================== */
+
+        .clear-route {
+
+            position: absolute;
+
+            top: 12px;
+
+            right: 12px;
+
+            z-index: 1000;
+
+            background: rgba(10,10,10,0.92);
+
+            color: white;
+
+            border: 1px solid var(--cyan);
+
+            border-radius: 3px;
+
+            padding: 8px 14px;
+
+            font-size: 10px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+            cursor: pointer;
+
+            text-transform: uppercase;
+
+            transition:
+                background 0.2s,
+                color 0.2s;
+
+        }
+
+
+        .clear-route:hover {
+
+            background: var(--cyan);
+
+            color: #000;
+
+        }
+
+
+        /* =====================================================
+           MAP FOOTER
+           ===================================================== */
+
+        .gps-footer {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            border-top: 1px solid #333;
+
+            background: #101010;
+
+        }
+
+
+        .gps-item {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 12px;
+
+            border-right: 1px solid #333;
+
+            font-size: 10px;
+
+        }
+
+
+        .gps-item:last-child {
+
+            border-right: none;
+
+        }
+
+
+        .gps-label {
+
+            color: #888;
+
+            font-weight: bold;
+
+        }
+
+
+        .gps-value {
+
+            color: white;
+
+            font-weight: bold;
+
+        }
+
+
+        /* =====================================================
+           LEAFLET FIX
+           ===================================================== */
+
+        .leaflet-container {
+
+            width: 100% !important;
+
+            height: 100% !important;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            background: #151515;
+
+        }
+
+
+        .leaflet-control-zoom {
+
+            border: 1px solid #555 !important;
+
+        }
+
+
+        .leaflet-control-zoom a {
+
+            background: #111 !important;
+
+            color: white !important;
+
+            border-bottom: 1px solid #444 !important;
+
+        }
+
+
+        .leaflet-control-zoom a:hover {
+
+            background: #222 !important;
+
+        }
+
+
+        .leaflet-control-attribution {
+
+            background: rgba(0,0,0,0.65) !important;
+
+            color: white !important;
+
+        }
+
+
+        .leaflet-control-attribution a {
+
+            color: #00aaff !important;
+
+        }
+
+
+        /* =====================================================
+           ROUTE STATUS
+           ===================================================== */
+
+        .route-count {
+
+            position: absolute;
+
+            left: 12px;
+
+            bottom: 12px;
+
+            z-index: 1000;
+
+            background: rgba(0,0,0,0.8);
+
+            padding: 6px 10px;
+
+            border: 1px solid #444;
+
+            border-radius: 3px;
+
+            font-size: 10px;
+
+            color: #ccc;
+
+            pointer-events: none;
+
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+           ===================================================== */
+
+        @media (max-width: 1100px) {
+
+            html,
+            body {
+
+                overflow: auto;
+
+            }
+
+
+            .dashboard {
+
+                height: auto;
+
+                min-height: 100vh;
+
+                overflow: visible;
+
+                grid-template-columns: 1fr;
+
+                grid-template-rows: auto auto;
+
+            }
+
+
+            .left-area {
+
+                grid-column: 1;
+
+                grid-row: 1;
+
+                min-height: 700px;
+
+            }
+
+
+            .map-area {
+
+                grid-column: 1;
+
+                grid-row: 2;
+
+                height: 600px;
+
+            }
+
+        }
+
+
+        @media (max-width: 700px) {
+
+            body {
+
+                padding: 6px;
+
+            }
+
+
+            .left-area {
+
+                grid-template-rows:
+                    65px
+                    55px
+                    auto
+                    auto
+                    auto;
+
+            }
+
+
+            .header {
+
+                grid-template-columns:
+                    80px
+                    1fr
+                    100px;
+
+            }
+
+
+            .team-logo {
+
+                max-width: 70px;
+
+                max-height: 48px;
+
+            }
+
+
+            .title {
+
+                font-size: 20px;
+
+                letter-spacing: 1px;
+
+            }
+
+
+            .main-metrics {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .main-metrics .metric {
+
+                min-height: 100px;
+
+            }
+
+
+            .small-metrics {
+
+                grid-template-columns: 1fr;
+
+            }
+
+
+            .small-metric {
+
+                min-height: 45px;
+
+            }
+
+
+            .info-area {
+
+                grid-template-columns: 1fr;
+
+                min-height: 900px;
+
+            }
+
+
+            .map-area {
+
+                height: 500px;
+
+            }
+
+        }
+
+    </style>
+
 </head>
+
+
 <body>
-  <header>
-    <h1>TEAM RENEW TELEMETRY</h1>
-    <div id="connection" class="connection"><span class="dot"></span><span id="connectionText">Connecting…</span></div>
-  </header>
 
-  <main class="dashboard">
-    <section class="card vehicle">
-      <h2>Vehicle</h2>
-      <div class="metrics">
-        <div class="metric speed"><span class="label">Speed</span><span class="value" id="speed_kmh">-- <span class="unit">km/h</span></span></div>
-        <div class="metric"><span class="label">Vehicle ID</span><span class="value" id="vehicle">--</span></div>
-        <div class="metric"><span class="label">Throttle</span><span class="value" id="throttle">-- <span class="unit">%</span></span></div>
-        <div class="metric"><span class="label">Acceleration</span><span class="value" id="accel">-- <span class="unit">m/s²</span></span></div>
-        <div class="metric"><span class="label">Deceleration</span><span class="value" id="decel">-- <span class="unit">m/s²</span></span></div>
-        <div class="metric"><span class="label">Slope</span><span class="value" id="slope">-- <span class="unit">°</span></span></div>
-        <div class="metric"><span class="label">DS18B20 Temperature</span><span class="value" id="ds18b20_temp">-- <span class="unit">°C</span></span></div>
-        <div class="metric"><span class="label">Distance</span><span class="value" id="distance_m">-- <span class="unit">m</span></span></div>
-      </div>
-    </section>
 
-    <section class="card motor">
-      <h2>Motor &amp; Power</h2>
-      <div class="metrics">
-        <div class="metric"><span class="label">Bus Voltage</span><span class="value" id="bus_voltage">-- <span class="unit">V</span></span></div>
-        <div class="metric"><span class="label">Motor Current</span><span class="value" id="motor_current">-- <span class="unit">A</span></span></div>
-        <div class="metric"><span class="label">Motor RPM</span><span class="value" id="m_rpm">-- <span class="unit">rpm</span></span></div>
-        <div class="metric"><span class="label">Motor Power</span><span class="value" id="m_power">-- <span class="unit">W</span></span></div>
-      </div>
-    </section>
+<div class="dashboard">
 
-    <section class="card fuel-cell">
-      <h2>Fuel Cell</h2>
-      <div class="metrics">
-        <div class="metric"><span class="label">Voltage</span><span class="value" id="fc_voltage">-- <span class="unit">V</span></span></div>
-        <div class="metric"><span class="label">Current</span><span class="value" id="fc_current">-- <span class="unit">A</span></span></div>
-        <div class="metric"><span class="label">Power</span><span class="value" id="fc_power">-- <span class="unit">W</span></span></div>
-        <div class="metric"><span class="label">Stack Temperature</span><span class="value" id="fc_stack_temp">-- <span class="unit">°C</span></span></div>
-        <div class="metric"><span class="label">H₂ Leak Signal</span><span class="value" id="fc_h2_leak_volts">-- <span class="unit">V</span></span></div>
-        <div class="metric"><span class="label">Environment Temp.</span><span class="value" id="fc_env_temp">-- <span class="unit">°C</span></span></div>
-        <div class="metric"><span class="label">Battery Voltage</span><span class="value" id="fc_batt_voltage">-- <span class="unit">V</span></span></div>
-        <div class="metric"><span class="label">Battery Current</span><span class="value" id="fc_batt_current">-- <span class="unit">A</span></span></div>
-        <div class="metric"><span class="label">Error Status</span><span class="value" id="fc_error_flag">--</span></div>
-      </div>
-    </section>
 
-    <section class="card gps">
-      <h2>GPS</h2>
-      <div class="metrics">
-        <div class="metric"><span class="label">Latitude</span><span class="value" id="gps_lat">--</span></div>
-        <div class="metric"><span class="label">Longitude</span><span class="value" id="gps_lon">--</span></div>
-        <div class="metric"><span class="label">Altitude</span><span class="value" id="gps_alt">-- <span class="unit">m</span></span></div>
-      </div>
-    </section>
+    <!-- =====================================================
+         LEFT SIDE
+         ===================================================== -->
 
-    <section class="card map-card">
-      <div class="map-tools"><h2>Live Map &amp; Route</h2><button id="clearRoute" type="button">Clear route</button></div>
-      <div id="map"></div>
-      <p class="map-tools" style="margin-top:10px"><span id="routeStatus">Waiting for a valid GPS fix.</span></p>
-    </section>
-    <p class="footnote">Last update: <span id="updatedAt">--</span></p>
-  </main>
+    <div class="left-area">
 
-  <script>
-    const ROUTE_LIMIT = 200;
-    const MIN_POINT_DISTANCE_METRES = 4;
-    const MAX_POINT_JUMP_METRES = 2000;
-    let map, marker, routeLine, routePoints = [], hasCentredMap = false;
 
-    function format(value, decimals = 2) {
-      if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '--';
-      return typeof value === 'number' ? value.toFixed(decimals) : String(value);
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+
+        <div class="header">
+
+
+            <div class="logo-box">
+
+                <img
+                    src="/team-renew-logo.png"
+                    class="team-logo"
+                    alt="Team ReNew"
+                    onerror="this.style.display='none';"
+                >
+
+            </div>
+
+
+            <div class="title-box">
+
+                <div class="title">
+
+                    TEAM <span>ReNew</span>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="connection"
+                id="connectionStatus"
+            >
+
+                <span class="connection-dot"></span>
+
+                <span id="connectionText">
+                    DISCONNECTED
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             THROTTLE
+             ================================================= -->
+
+        <div class="panel throttle-panel">
+
+
+            <div class="section-label">
+
+                THROTTLE
+
+            </div>
+
+
+            <div class="throttle-track">
+
+                <div
+                    class="throttle-fill"
+                    id="throttleFill"
+                ></div>
+
+            </div>
+
+
+            <div
+                class="throttle-value"
+                id="throttle"
+            >
+
+                -- %
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MAIN METRICS
+             ================================================= -->
+
+        <div class="main-metrics">
+
+
+            <!-- FUEL CELL POWER -->
+
+            <div class="metric">
+
+                <div class="metric-label">
+
+                    FUEL CELL POWER
+
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="fcPower"
+                >
+
+                    --
+
+                </div>
+
+                <div class="metric-unit">
+
+                    W
+
+                </div>
+
+            </div>
+
+
+            <!-- SPEED -->
+
+            <div class="metric speed-metric">
+
+                <div class="metric-label">
+
+                    SPEED
+
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="speed"
+                >
+
+                    --
+
+                </div>
+
+                <div class="metric-unit">
+
+                    km/h
+
+                </div>
+
+            </div>
+
+
+            <!-- MOTOR POWER -->
+
+            <div class="metric">
+
+                <div class="metric-label">
+
+                    MOTOR POWER
+
+                </div>
+
+                <div
+                    class="metric-value"
+                    id="motorPower"
+                >
+
+                    --
+
+                </div>
+
+                <div class="metric-unit">
+
+                    W
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             SMALL METRICS
+             ================================================= -->
+
+        <div class="small-metrics">
+
+
+            <!-- ACCELERATION -->
+
+            <div class="small-metric">
+
+                <span class="small-label">
+
+                    ACCEL
+
+                </span>
+
+                <span
+                    class="small-value"
+                    id="acceleration"
+                >
+
+                    --
+
+                </span>
+
+                <span class="small-unit">
+
+                    m/s²
+
+                </span>
+
+            </div>
+
+
+            <!-- DISTANCE -->
+
+            <div class="small-metric">
+
+                <span class="small-label">
+
+                    DISTANCE
+
+                </span>
+
+                <span
+                    class="small-value"
+                    id="distance"
+                >
+
+                    --
+
+                </span>
+
+                <span class="small-unit">
+
+                    m
+
+                </span>
+
+            </div>
+
+
+            <!-- DECELERATION -->
+
+            <div class="small-metric">
+
+                <span class="small-label">
+
+                    DEACCELERATION
+
+                </span>
+
+                <span
+                    class="small-value"
+                    id="deceleration"
+                >
+
+                    --
+
+                </span>
+
+                <span class="small-unit">
+
+                    m/s²
+
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMATION PANELS
+             ================================================= -->
+
+        <div class="info-area">
+
+
+            <!-- =================================================
+                 MOTOR INFO
+                 ================================================= -->
+
+            <div class="info-panel">
+
+
+                <div class="info-header">
+
+                    MOTOR INFO
+
+                </div>
+
+
+                <div class="info-content">
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Vehicle
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="vehicle"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Bus Voltage
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="busVoltage"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Motor Current
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="motorCurrent"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Motor RPM
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="motorRPM"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Motor Temperature
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="motorTemp"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Throttle
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="motorThrottle"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 WARNING / INSTRUCTION
+                 ================================================= -->
+
+            <div class="info-panel">
+
+
+                <div class="info-header">
+
+                    WARNING / INSTRUCTION
+
+                </div>
+
+
+                <div class="warning-content">
+
+
+                    <div
+                        class="system-message"
+                        id="systemMessage"
+                    >
+
+                        SYSTEM NORMAL
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FUEL CELL INFO
+                 ================================================= -->
+
+            <div class="info-panel">
+
+
+                <div class="info-header">
+
+                    FUEL CELL INFO
+
+                </div>
+
+
+                <div class="info-content">
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Voltage
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="fcVoltage"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Current
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="fcCurrent"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Power
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="fcPowerInfo"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Stack Temp
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="stackTemp"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            H₂ Leak
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="h2Leak"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Environment
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="environmentTemp"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Battery Voltage
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="batteryVoltage"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Battery Current
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="batteryCurrent"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                    <div class="data-row">
+
+                        <span class="data-name">
+                            Error Flag
+                        </span>
+
+                        <span
+                            class="data-value"
+                            id="errorFlag"
+                        >
+                            --
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- =====================================================
+         RIGHT SIDE MAP
+         ===================================================== -->
+
+    <div class="map-area">
+
+
+        <!-- =================================================
+             SLOPE
+             ================================================= -->
+
+        <div class="slope-header">
+
+
+            <div class="slope-label">
+
+                SLOPE (DEG)
+
+            </div>
+
+
+            <div
+                class="slope-value"
+                id="slope"
+            >
+
+                --
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             MAP
+             ================================================= -->
+
+        <div class="map-wrapper">
+
+
+            <div id="map"></div>
+
+
+            <button
+                class="clear-route"
+                id="clearRoute"
+            >
+
+                CLEAR ROUTE
+
+            </button>
+
+
+            <div
+                class="route-count"
+                id="routeCount"
+            >
+
+                Route: 0 points
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             GPS FOOTER
+             ================================================= -->
+
+        <div class="gps-footer">
+
+
+            <div class="gps-item">
+
+                <span class="gps-label">
+                    LAT
+                </span>
+
+                <span
+                    class="gps-value"
+                    id="lat"
+                >
+                    --
+                </span>
+
+            </div>
+
+
+            <div class="gps-item">
+
+                <span class="gps-label">
+                    LONG
+                </span>
+
+                <span
+                    class="gps-value"
+                    id="lon"
+                >
+                    --
+                </span>
+
+            </div>
+
+
+            <div class="gps-item">
+
+                <span class="gps-label">
+                    ALT
+                </span>
+
+                <span
+                    class="gps-value"
+                    id="altitude"
+                >
+                    --
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+
+    /* =========================================================
+       SOCKET.IO
+       ========================================================= */
+
+    const socket = io();
+
+
+    /* =========================================================
+       DOM HELPER
+       ========================================================= */
+
+    function el(id) {
+
+        return document.getElementById(id);
+
     }
-    function setValue(id, value, decimals) {
-      const element = document.getElementById(id);
-      const unit = element.querySelector('.unit');
-      element.firstChild.nodeValue = format(value, decimals) + (unit ? ' ' : '');
+
+
+    /* =========================================================
+       TELEMETRY TIMEOUT
+       ========================================================= */
+
+    let lastTelemetryTime = 0;
+
+    const TELEMETRY_TIMEOUT = 3000;
+
+
+    /* =========================================================
+       CONNECTION STATUS
+       ========================================================= */
+
+    function setConnectionStatus(connected) {
+
+        const status =
+            el("connectionStatus");
+
+        const text =
+            el("connectionText");
+
+
+        if (connected) {
+
+            status.classList.add(
+                "connected"
+            );
+
+            text.textContent =
+                "CONNECTED";
+
+        }
+
+        else {
+
+            status.classList.remove(
+                "connected"
+            );
+
+            text.textContent =
+                "DISCONNECTED";
+
+        }
+
     }
-    function validCoordinate(lat, lon) { return Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180 && !(lat === 0 && lon === 0); }
-    function updateError(value) {
-      const el = document.getElementById('fc_error_flag');
-      const active = value === true || value === 1 || value === '1' || String(value).toLowerCase() === 'true';
-      el.textContent = value === undefined || value === null ? '--' : active ? 'ERROR' : 'Normal';
-      el.className = 'value ' + (active ? 'error-active' : 'error-ok');
-    }
-    function initialiseMap() {
-      map = L.map('map').setView([20.5937, 78.9629], 5);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
-      routeLine = L.polyline([], { color: '#00aaff', weight: 4, opacity: .82 }).addTo(map);
-    }
-    function updateMap(lat, lon) {
-      if (!validCoordinate(lat, lon)) return;
-      const point = L.latLng(lat, lon), previous = routePoints.at(-1);
-      if (previous) {
-        const distance = previous.distanceTo(point);
-        if (distance < MIN_POINT_DISTANCE_METRES) { updateMarker(point); return; }
-        if (distance > MAX_POINT_JUMP_METRES) {
-          routePoints = [point];
-          document.getElementById('routeStatus').textContent = 'Route restarted after an implausible GPS jump.';
-        } else routePoints.push(point);
-      } else routePoints.push(point);
-      if (routePoints.length > ROUTE_LIMIT) routePoints.shift();
-      routeLine.setLatLngs(routePoints);
-      updateMarker(point);
-      document.getElementById('routeStatus').textContent = `Route contains ${routePoints.length} point${routePoints.length === 1 ? '' : 's'} (latest ${lat.toFixed(6)}, ${lon.toFixed(6)}).`;
-    }
-    function updateMarker(point) {
-      if (!marker) marker = L.marker(point).addTo(map).bindPopup('Current vehicle position');
-      else marker.setLatLng(point);
-      if (!hasCentredMap) { map.setView(point, 16); hasCentredMap = true; }
-    }
-    function updateDashboard(data) {
-      const fc = data.fc || {}, gps = data.gps || {};
-      setValue('vehicle', data.vehicle, 0); setValue('throttle', data.throttle, 1); setValue('accel', data.accel, 2); setValue('decel', data.decel, 2);
-      setValue('slope', data.slope, 1); setValue('ds18b20_temp', data.ds18b20_temp, 1); setValue('bus_voltage', data.bus_voltage, 2); setValue('motor_current', data.motor_current, 2);
-      setValue('m_rpm', data.m_rpm, 0); setValue('m_power', data.m_power, 1); setValue('speed_kmh', data.speed_kmh, 2); setValue('distance_m', data.distance_m, 1);
-      setValue('fc_voltage', fc.voltage, 2); setValue('fc_current', fc.current, 2); setValue('fc_power', fc.power, 1); setValue('fc_stack_temp', fc.stack_temp, 1);
-      setValue('fc_h2_leak_volts', fc.h2_leak_volts, 3); setValue('fc_env_temp', fc.env_temp, 1); setValue('fc_batt_voltage', fc.batt_voltage, 2); setValue('fc_batt_current', fc.batt_current, 2); updateError(fc.error_flag);
-      setValue('gps_lat', gps.lat, 6); setValue('gps_lon', gps.lon, 6); setValue('gps_alt', gps.alt, 1);
-      document.getElementById('updatedAt').textContent = new Date().toLocaleTimeString();
-      updateMap(Number(gps.lat), Number(gps.lon));
-    }
-    window.addEventListener('load', () => {
-      initialiseMap();
-      document.getElementById('clearRoute').addEventListener('click', () => {
-        routePoints = []; routeLine.setLatLngs([]); document.getElementById('routeStatus').textContent = 'Route cleared; the next valid fix starts a new route.';
-      });
-      const socket = io();
-      const connection = document.getElementById('connection'), connectionText = document.getElementById('connectionText');
-      socket.on('connect', () => { connection.classList.add('online'); connectionText.textContent = 'Live connection'; });
-      socket.on('disconnect', () => { connection.classList.remove('online'); connectionText.textContent = 'Connection lost'; });
-      socket.on('connect_error', () => { connection.classList.remove('online'); connectionText.textContent = 'Reconnecting…'; });
-      socket.on('telemetry', updateDashboard);
+
+
+    setInterval(() => {
+
+        if (
+            lastTelemetryTime !== 0 &&
+            Date.now() - lastTelemetryTime
+                <= TELEMETRY_TIMEOUT
+        ) {
+
+            setConnectionStatus(true);
+
+        }
+
+        else {
+
+            setConnectionStatus(false);
+
+        }
+
+    }, 500);
+
+
+    /* =========================================================
+       SOCKET EVENTS
+       ========================================================= */
+
+    socket.on("connect", () => {
+
+        console.log(
+            "Socket.IO connected"
+        );
+
     });
-  </script>
+
+
+    socket.on("disconnect", () => {
+
+        console.log(
+            "Socket.IO disconnected"
+        );
+
+        setConnectionStatus(false);
+
+    });
+
+
+    /* =========================================================
+       MAP DEFAULT LOCATION
+       ========================================================= */
+
+    const defaultLat = 11.0789;
+
+    const defaultLon = 76.9860;
+
+
+    /* =========================================================
+       CREATE MAP
+       ========================================================= */
+
+    const map = L.map(
+        "map",
+        {
+
+            zoomControl: true,
+
+            scrollWheelZoom: true,
+
+            doubleClickZoom: true,
+
+            dragging: true,
+
+            touchZoom: true,
+
+            boxZoom: true,
+
+            keyboard: true
+
+        }
+    ).setView(
+
+        [
+            defaultLat,
+            defaultLon
+        ],
+
+        17
+
+    );
+
+
+    /* =========================================================
+       MAP TILES
+       ========================================================= */
+
+    L.tileLayer(
+
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+        {
+
+            maxZoom: 21,
+
+            minZoom: 1,
+
+            attribution:
+                "&copy; OpenStreetMap contributors",
+
+            updateWhenIdle: true,
+
+            keepBuffer: 2
+
+        }
+
+    ).addTo(map);
+
+
+    /* =========================================================
+       VEHICLE MARKER
+       ========================================================= */
+
+    const marker =
+        L.marker(
+
+            [
+                defaultLat,
+                defaultLon
+            ]
+
+        ).addTo(map);
+
+
+    /* =========================================================
+       ROUTE
+       ========================================================= */
+
+    let route = [];
+
+
+    const polyline =
+        L.polyline(
+
+            route,
+
+            {
+
+                color: "#00aaff",
+
+                weight: 4,
+
+                opacity: 0.9,
+
+                smoothFactor: 1
+
+            }
+
+        ).addTo(map);
+
+
+    /* =========================================================
+       CLEAR ROUTE
+       ========================================================= */
+
+    el("clearRoute")
+        .addEventListener(
+            "click",
+            () => {
+
+                route = [];
+
+                polyline.setLatLngs([]);
+
+                el("routeCount")
+                    .textContent =
+                    "Route: 0 points";
+
+            }
+        );
+
+
+    /* =========================================================
+       MAP RESIZE FIX
+       ========================================================= */
+
+    function refreshMap() {
+
+        setTimeout(() => {
+
+            map.invalidateSize(
+                true
+            );
+
+        }, 100);
+
+    }
+
+
+    window.addEventListener(
+        "load",
+        refreshMap
+    );
+
+
+    window.addEventListener(
+        "resize",
+        refreshMap
+    );
+
+
+    setTimeout(
+        refreshMap,
+        500
+    );
+
+
+    setTimeout(
+        refreshMap,
+        1500
+    );
+
+
+    /* =========================================================
+       NUMBER FORMATTER
+       ========================================================= */
+
+    function numberValue(
+        value,
+        decimals = 2
+    ) {
+
+        const number =
+            Number(value);
+
+
+        if (
+            value === undefined ||
+            value === null ||
+            Number.isNaN(number)
+        ) {
+
+            return "--";
+
+        }
+
+
+        return number.toFixed(
+            decimals
+        );
+
+    }
+
+
+    /* =========================================================
+       TELEMETRY RECEIVER
+       ========================================================= */
+
+    socket.on(
+        "telemetry",
+        (data) => {
+
+
+            console.log(
+                "Telemetry received:",
+                data
+            );
+
+
+            lastTelemetryTime =
+                Date.now();
+
+
+            /* =================================================
+               VEHICLE
+               ================================================= */
+
+            if (
+                data.vehicle !== undefined
+            ) {
+
+                el("vehicle")
+                    .textContent =
+                    data.vehicle;
+
+            }
+
+
+            /* =================================================
+               THROTTLE
+               ================================================= */
+
+            if (
+                data.throttle !== undefined
+            ) {
+
+                const throttle =
+                    Number(
+                        data.throttle
+                    );
+
+
+                if (
+                    !Number.isNaN(
+                        throttle
+                    )
+                ) {
+
+                    const limitedThrottle =
+                        Math.max(
+                            0,
+                            Math.min(
+                                100,
+                                throttle
+                            )
+                        );
+
+
+                    el("throttle")
+                        .textContent =
+                        throttle.toFixed(1)
+                        + " %";
+
+
+                    el("motorThrottle")
+                        .textContent =
+                        throttle.toFixed(1)
+                        + " %";
+
+
+                    el("throttleFill")
+                        .style.width =
+                        limitedThrottle
+                        + "%";
+
+                }
+
+            }
+
+
+            /* =================================================
+               SPEED
+               ================================================= */
+
+            if (
+                data.speed_kmh !== undefined
+            ) {
+
+                el("speed")
+                    .textContent =
+                    numberValue(
+                        data.speed_kmh,
+                        2
+                    );
+
+            }
+
+
+            /* =================================================
+               ACCELERATION
+               ================================================= */
+
+            if (
+                data.accel !== undefined
+            ) {
+
+                el("acceleration")
+                    .textContent =
+                    numberValue(
+                        data.accel,
+                        2
+                    );
+
+            }
+
+
+            /* =================================================
+               DECELERATION
+               ================================================= */
+
+            if (
+                data.decel !== undefined
+            ) {
+
+                el("deceleration")
+                    .textContent =
+                    numberValue(
+                        data.decel,
+                        2
+                    );
+
+            }
+
+
+            /* =================================================
+               DISTANCE
+               ================================================= */
+
+            if (
+                data.distance_m !== undefined
+            ) {
+
+                el("distance")
+                    .textContent =
+                    numberValue(
+                        data.distance_m,
+                        1
+                    );
+
+            }
+
+
+            /* =================================================
+               SLOPE
+               ================================================= */
+
+            if (
+                data.slope !== undefined
+            ) {
+
+                el("slope")
+                    .textContent =
+                    numberValue(
+                        data.slope,
+                        2
+                    );
+
+            }
+
+
+            /* =================================================
+               MOTOR POWER
+               ================================================= */
+
+            if (
+                data.m_power !== undefined
+            ) {
+
+                el("motorPower")
+                    .textContent =
+                    numberValue(
+                        data.m_power,
+                        2
+                    );
+
+            }
+
+
+            /* =================================================
+               BUS VOLTAGE
+               ================================================= */
+
+            if (
+                data.bus_voltage !== undefined
+            ) {
+
+                el("busVoltage")
+                    .textContent =
+                    numberValue(
+                        data.bus_voltage,
+                        2
+                    )
+                    + " V";
+
+            }
+
+
+            /* =================================================
+               MOTOR CURRENT
+               ================================================= */
+
+            if (
+                data.motor_current !== undefined
+            ) {
+
+                el("motorCurrent")
+                    .textContent =
+                    numberValue(
+                        data.motor_current,
+                        2
+                    )
+                    + " A";
+
+            }
+
+
+            /* =================================================
+               MOTOR RPM
+               ================================================= */
+
+            if (
+                data.m_rpm !== undefined
+            ) {
+
+                el("motorRPM")
+                    .textContent =
+                    numberValue(
+                        data.m_rpm,
+                        0
+                    )
+                    + " rpm";
+
+            }
+
+
+            /* =================================================
+               DS18B20 / MOTOR TEMPERATURE
+               ================================================= */
+
+            if (
+                data.ds18b20_temp !== undefined
+            ) {
+
+                el("motorTemp")
+                    .textContent =
+                    numberValue(
+                        data.ds18b20_temp,
+                        2
+                    )
+                    + " °C";
+
+            }
+
+
+            /* =================================================
+               FUEL CELL
+               ================================================= */
+
+            if (
+                data.fc !== undefined &&
+                data.fc !== null
+            ) {
+
+
+                /* =============================================
+                   VOLTAGE
+                   ============================================= */
+
+                if (
+                    data.fc.voltage !== undefined
+                ) {
+
+                    el("fcVoltage")
+                        .textContent =
+                        numberValue(
+                            data.fc.voltage,
+                            2
+                        )
+                        + " V";
+
+                }
+
+
+                /* =============================================
+                   CURRENT
+                   ============================================= */
+
+                if (
+                    data.fc.current !== undefined
+                ) {
+
+                    el("fcCurrent")
+                        .textContent =
+                        numberValue(
+                            data.fc.current,
+                            2
+                        )
+                        + " A";
+
+                }
+
+
+                /* =============================================
+                   POWER
+                   ============================================= */
+
+                if (
+                    data.fc.power !== undefined
+                ) {
+
+                    const power =
+                        numberValue(
+                            data.fc.power,
+                            2
+                        );
+
+
+                    el("fcPower")
+                        .textContent =
+                        power;
+
+
+                    el("fcPowerInfo")
+                        .textContent =
+                        power + " W";
+
+                }
+
+
+                /* =============================================
+                   STACK TEMPERATURE
+                   ============================================= */
+
+                if (
+                    data.fc.stack_temp !== undefined
+                ) {
+
+                    el("stackTemp")
+                        .textContent =
+                        numberValue(
+                            data.fc.stack_temp,
+                            2
+                        )
+                        + " °C";
+
+                }
+
+
+                /* =============================================
+                   H2 LEAK
+                   ============================================= */
+
+                if (
+                    data.fc.h2_leak_volts !== undefined
+                ) {
+
+                    el("h2Leak")
+                        .textContent =
+                        numberValue(
+                            data.fc.h2_leak_volts,
+                            3
+                        )
+                        + " V";
+
+                }
+
+
+                /* =============================================
+                   ENVIRONMENT
+                   ============================================= */
+
+                if (
+                    data.fc.env_temp !== undefined
+                ) {
+
+                    el("environmentTemp")
+                        .textContent =
+                        numberValue(
+                            data.fc.env_temp,
+                            2
+                        )
+                        + " °C";
+
+                }
+
+
+                /* =============================================
+                   BATTERY VOLTAGE
+                   ============================================= */
+
+                if (
+                    data.fc.batt_voltage !== undefined
+                ) {
+
+                    el("batteryVoltage")
+                        .textContent =
+                        numberValue(
+                            data.fc.batt_voltage,
+                            2
+                        )
+                        + " V";
+
+                }
+
+
+                /* =============================================
+                   BATTERY CURRENT
+                   ============================================= */
+
+                if (
+                    data.fc.batt_current !== undefined
+                ) {
+
+                    el("batteryCurrent")
+                        .textContent =
+                        numberValue(
+                            data.fc.batt_current,
+                            2
+                        )
+                        + " A";
+
+                }
+
+
+                /* =============================================
+                   ERROR FLAG
+                   ============================================= */
+
+                if (
+                    data.fc.error_flag !== undefined
+                ) {
+
+                    const error =
+                        Number(
+                            data.fc.error_flag
+                        );
+
+
+                    const errorElement =
+                        el("errorFlag");
+
+
+                    errorElement
+                        .textContent =
+                        Number.isNaN(error)
+                            ? data.fc.error_flag
+                            : error;
+
+
+                    errorElement.classList.remove(
+                        "normal",
+                        "warning",
+                        "error"
+                    );
+
+
+                    if (
+                        error === 0
+                    ) {
+
+                        errorElement.classList.add(
+                            "normal"
+                        );
+
+                    }
+
+                    else {
+
+                        errorElement.classList.add(
+                            "error"
+                        );
+
+                    }
+
+
+                    updateSystemMessage(
+                        error
+                    );
+
+                }
+
+            }
+
+
+            /* =================================================
+               GPS
+               ================================================= */
+
+            if (
+                data.gps !== undefined &&
+                data.gps !== null
+            ) {
+
+
+                const latitude =
+                    Number(
+                        data.gps.lat
+                    );
+
+
+                const longitude =
+                    Number(
+                        data.gps.lon
+                    );
+
+
+                const altitude =
+                    Number(
+                        data.gps.alt
+                    );
+
+
+                /* =============================================
+                   LATITUDE
+                   ============================================= */
+
+                if (
+                    !Number.isNaN(
+                        latitude
+                    )
+                ) {
+
+                    el("lat")
+                        .textContent =
+                        latitude.toFixed(6)
+                        + "°";
+
+                }
+
+
+                /* =============================================
+                   LONGITUDE
+                   ============================================= */
+
+                if (
+                    !Number.isNaN(
+                        longitude
+                    )
+                ) {
+
+                    el("lon")
+                        .textContent =
+                        longitude.toFixed(6)
+                        + "°";
+
+                }
+
+
+                /* =============================================
+                   ALTITUDE
+                   ============================================= */
+
+                if (
+                    !Number.isNaN(
+                        altitude
+                    )
+                ) {
+
+                    el("altitude")
+                        .textContent =
+                        altitude.toFixed(1)
+                        + " m";
+
+                }
+
+
+                /* =============================================
+                   VALID GPS
+                   ============================================= */
+
+                if (
+
+                    !Number.isNaN(
+                        latitude
+                    ) &&
+
+                    !Number.isNaN(
+                        longitude
+                    ) &&
+
+                    latitude >= -90 &&
+
+                    latitude <= 90 &&
+
+                    longitude >= -180 &&
+
+                    longitude <= 180
+
+                ) {
+
+
+                    /* =========================================
+                       UPDATE MARKER
+                       ========================================= */
+
+                    marker.setLatLng(
+
+                        [
+                            latitude,
+                            longitude
+                        ]
+
+                    );
+
+
+                    /* =========================================
+                       ADD ROUTE
+                       ========================================= */
+
+                    route.push(
+
+                        [
+                            latitude,
+                            longitude
+                        ]
+
+                    );
+
+
+                    /* =========================================
+                       LIMIT ROUTE
+                       ========================================= */
+
+                    if (
+                        route.length > 5000
+                    ) {
+
+                        route.shift();
+
+                    }
+
+
+                    /* =========================================
+                       UPDATE POLYLINE
+                       ========================================= */
+
+                    polyline.setLatLngs(
+                        route
+                    );
+
+
+                    /* =========================================
+                       ROUTE COUNTER
+                       ========================================= */
+
+                    el("routeCount")
+                        .textContent =
+                        "Route: "
+                        + route.length
+                        + " points";
+
+
+                    /* =========================================
+                       FOLLOW VEHICLE
+                       ========================================= */
+
+                    map.panTo(
+
+                        [
+                            latitude,
+                            longitude
+                        ],
+
+                        {
+
+                            animate: true,
+
+                            duration: 0.5
+
+                        }
+
+                    );
+
+                }
+
+            }
+
+
+        }
+    );
+
+
+    /* =========================================================
+       WARNING / SYSTEM MESSAGE
+       ========================================================= */
+
+    function updateSystemMessage(
+        errorFlag
+    ) {
+
+        const message =
+            el("systemMessage");
+
+
+        message.classList.remove(
+            "warning",
+            "error"
+        );
+
+
+        if (
+            Number(errorFlag) === 0
+        ) {
+
+            message.textContent =
+                "SYSTEM NORMAL";
+
+        }
+
+        else {
+
+            message.textContent =
+                "SYSTEM ERROR";
+
+            message.classList.add(
+                "error"
+            );
+
+        }
+
+    }
+
+
+</script>
+
+
 </body>
+
 </html>

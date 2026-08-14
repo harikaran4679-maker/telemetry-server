@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    >
+
+    <title>Team ReNew - Driver Dashboard</title>
+
+
+    <!-- =====================================================
+         SOCKET.IO
+         ===================================================== -->
+
+    <script src="/socket.io/socket.io.js"></script>
+
+
+    <!-- =====================================================
+         LEAFLET
+         ===================================================== -->
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    ></script>
+
+
+    <!-- =====================================================
+         CSS
+         ===================================================== -->
+
+    <style>
+
+        /* =================================================
+           GLOBAL
+           ================================================= */
+
+        * {
+
+            margin: 0;
+
+            padding: 0;
+
+            box-sizing: border-box;
+
+        }
+
+
+        html,
+        body {
+
+            width: 100%;
+
+            height: 100%;
+
+            overflow: hidden;
+
+            background: #050505;
+
+            color: #ffffff;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+        }
+
+
+        body {
+
+            padding: 8px;
+
+        }
+
+
+        /* =================================================
+           MAIN DRIVER SCREEN
+           ================================================= */
+
+        .driver-dashboard {
+
+            width: 100%;
+
+            height: calc(100vh - 16px);
+
+            display: grid;
+
+            grid-template-columns:
+                200px
+                minmax(500px, 1fr)
+                500px;
+
+            grid-template-rows:
+                72px
+                1fr
+                64px
+                66px;
+
+            gap: 8px;
+
+            min-width: 1000px;
+
+            background: #050505;
+
+        }
+
+
+        /* =================================================
+           COMMON PANEL
+           ================================================= */
+
+        .panel {
+
+            background: #0b0b0b;
+
+            border: 1px solid #252525;
+
+            position: relative;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =================================================
+           HEADER
+           ================================================= */
+
+        .status-panel {
+
+            grid-column: 1;
+
+            grid-row: 1;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+        }
+
+
+        .connection {
+
+            font-size: 15px;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 8px;
+
+        }
+
+
+        .connection-dot {
+
+            width: 11px;
+
+            height: 11px;
+
+            border-radius: 50%;
+
+            background: #ff3030;
+
+            box-shadow:
+                0 0 10px #ff3030;
+
+        }
+
+
+        .connection.connected {
+
+            color: #00ff9d;
+
+        }
+
+
+        .connection.connected
+        .connection-dot {
+
+            background: #00ff9d;
+
+            box-shadow:
+                0 0 12px #00ff9d;
+
+        }
+
+
+        .connection.disconnected {
+
+            color: #ff3030;
+
+        }
+
+
+        /* =================================================
+           LOGO / TITLE
+           ================================================= */
+
+        .title-panel {
+
+            grid-column: 2;
+
+            grid-row: 1;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-bottom:
+                3px solid #00aaff;
+
+        }
+
+
+        .title-content {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 18px;
+
+        }
+
+
+        .team-logo {
+
+            width: 58px;
+
+            height: 58px;
+
+            object-fit: contain;
+
+        }
+
+
+        .team-title {
+
+            font-size: clamp(28px, 3vw, 46px);
+
+            font-weight: 900;
+
+            letter-spacing: 5px;
+
+            color: #ffffff;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .team-title span {
+
+            color: #00aaff;
+
+        }
+
+
+        /* =================================================
+           SLOPE
+           ================================================= */
+
+        .slope-panel {
+
+            grid-column: 3;
+
+            grid-row: 1;
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+
+        .section-label {
+
+            font-size: 13px;
+
+            color: #777;
+
+            letter-spacing: 3px;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .slope-value {
+
+            margin-top: 4px;
+
+            font-size: 32px;
+
+            font-weight: 900;
+
+            color: #00aaff;
+
+        }
+
+
+        /* =================================================
+           THROTTLE
+           ================================================= */
+
+        .throttle-panel {
+
+            grid-column: 1;
+
+            grid-row: 2;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 12px;
+
+        }
+
+
+        .vertical-label {
+
+            position: absolute;
+
+            top: 50%;
+
+            left: 10px;
+
+            transform:
+                translateY(-50%)
+                rotate(-90deg);
+
+            color: #777;
+
+            font-size: 13px;
+
+            letter-spacing: 4px;
+
+            font-weight: bold;
+
+        }
+
+
+        .throttle-bar {
+
+            position: relative;
+
+            width: 78px;
+
+            height: 70%;
+
+            max-height: 400px;
+
+            min-height: 220px;
+
+            border:
+                2px solid #333;
+
+            background: #111;
+
+            display: flex;
+
+            align-items: flex-end;
+
+            overflow: hidden;
+
+        }
+
+
+        .throttle-fill {
+
+            width: 100%;
+
+            height: 0%;
+
+            background:
+                linear-gradient(
+                    to top,
+                    #00aaff,
+                    #00d9ff
+                );
+
+            box-shadow:
+                0 0 20px
+                rgba(0,170,255,0.7);
+
+            transition:
+                height 0.15s linear;
+
+        }
+
+
+        .throttle-value {
+
+            position: absolute;
+
+            bottom: 18px;
+
+            left: 0;
+
+            width: 100%;
+
+            text-align: center;
+
+            font-size: 22px;
+
+            font-weight: 900;
+
+            color: #ffffff;
+
+            text-shadow:
+                0 0 8px #000;
+
+        }
+
+
+        .throttle-title {
+
+            margin-top: 12px;
+
+            color: #777;
+
+            font-size: 11px;
+
+            letter-spacing: 2px;
+
+        }
+
+
+        /* =================================================
+           CENTER AREA
+           ================================================= */
+
+        .main-center {
+
+            grid-column: 2;
+
+            grid-row: 2;
+
+            display: grid;
+
+            grid-template-rows:
+                minmax(260px, 1fr)
+                150px;
+
+            gap: 8px;
+
+            background: #050505;
+
+            overflow: hidden;
+
+        }
+
+
+        /* =================================================
+           SPEED
+           ================================================= */
+
+        .speed-panel {
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+            border-top:
+                3px solid #00aaff;
+
+        }
+
+
+        .speed-label {
+
+            color: #777;
+
+            font-size: 16px;
+
+            letter-spacing: 8px;
+
+            margin-bottom: 5px;
+
+        }
+
+
+        .speed-value {
+
+            font-size: clamp(90px, 12vw, 180px);
+
+            line-height: 0.9;
+
+            font-weight: 900;
+
+            color: #ffffff;
+
+            text-shadow:
+                0 0 18px
+                rgba(255,255,255,0.2);
+
+        }
+
+
+        .speed-unit {
+
+            margin-top: 8px;
+
+            color: #00aaff;
+
+            font-size: 18px;
+
+            font-weight: bold;
+
+            letter-spacing: 4px;
+
+        }
+
+
+        /* =================================================
+           POWER PANELS
+           ================================================= */
+
+        .power-row {
+
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 8px;
+
+        }
+
+
+        .power-panel {
+
+            display: flex;
+
+            flex-direction: column;
+
+            justify-content: center;
+
+            align-items: center;
+
+        }
+
+
+        .power-label {
+
+            color: #777;
+
+            font-size: 14px;
+
+            letter-spacing: 2px;
+
+        }
+
+
+        .fuel-power {
+
+            margin-top: 8px;
+
+            font-size: clamp(32px, 4vw, 60px);
+
+            font-weight: 900;
+
+            color: #00ff9d;
+
+        }
+
+
+        .motor-power {
+
+            margin-top: 8px;
+
+            font-size: clamp(32px, 4vw, 60px);
+
+            font-weight: 900;
+
+            color: #00aaff;
+
+        }
+
+
+        .power-unit {
+
+            color: #888;
+
+            font-size: 12px;
+
+        }
+
+
+        /* =================================================
+           MAP
+           ================================================= */
+
+        .map-panel {
+
+            grid-column: 3;
+
+            grid-row: 2;
+
+            display: flex;
+
+            flex-direction: column;
+
+        }
+
+
+        .map-header {
+
+            height: 48px;
+
+            min-height: 48px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding:
+                0 12px;
+
+            border-bottom:
+                1px solid #252525;
+
+        }
+
+
+        .map-title {
+
+            color: #00aaff;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            letter-spacing: 2px;
+
+        }
+
+
+        .clear-button {
+
+            background: #050505;
+
+            color: #00aaff;
+
+            border:
+                1px solid #00aaff;
+
+            padding:
+                7px 15px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            transition:
+                0.2s;
+
+        }
+
+
+        .clear-button:hover {
+
+            background: #00aaff;
+
+            color: #000;
+
+        }
+
+
+        #map {
+
+            flex: 1;
+
+            min-height: 0;
+
+            width: 100%;
+
+        }
+
+
+        /* =================================================
+           MAP ROUTE STATUS
+           ================================================= */
+
+        .route-status {
+
+            position: absolute;
+
+            bottom: 52px;
+
+            left: 10px;
+
+            z-index: 1000;
+
+            background:
+                rgba(0,0,0,0.75);
+
+            padding:
+                7px 10px;
+
+            font-size: 11px;
+
+            color: #ffffff;
+
+            border:
+                1px solid #333;
+
+        }
+
+
+        /* =================================================
+           BOTTOM TELEMETRY
+           ================================================= */
+
+        .bottom-data {
+
+            grid-column: 1 / 4;
+
+            grid-row: 3;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 8px;
+
+            background: #050505;
+
+        }
+
+
+        .data-box {
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            gap: 10px;
+
+        }
+
+
+        .data-label {
+
+            color: #777;
+
+            font-size: 13px;
+
+            letter-spacing: 1px;
+
+        }
+
+
+        .data-value {
+
+            font-size: 24px;
+
+            font-weight: 900;
+
+            color: #ffffff;
+
+        }
+
+
+        .data-unit {
+
+            color: #888;
+
+            font-size: 11px;
+
+        }
+
+
+        /* =================================================
+           SYSTEM STATUS
+           ================================================= */
+
+        .system-panel {
+
+            grid-column: 1 / 4;
+
+            grid-row: 4;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-left:
+                5px solid #00ff9d;
+
+        }
+
+
+        .system-message {
+
+            color: #00ff9d;
+
+            font-size: clamp(22px, 3vw, 40px);
+
+            font-weight: 900;
+
+            letter-spacing: 4px;
+
+            text-transform: uppercase;
+
+        }
+
+
+        /* =================================================
+           WARNING STATE
+           ================================================= */
+
+        .system-panel.warning {
+
+            border-left-color: #ff3030;
+
+        }
+
+
+        .system-panel.warning
+        .system-message {
+
+            color: #ff3030;
+
+            animation:
+                warningBlink 0.8s
+                infinite alternate;
+
+        }
+
+
+        @keyframes warningBlink {
+
+            from {
+
+                opacity: 1;
+
+            }
+
+            to {
+
+                opacity: 0.45;
+
+            }
+
+        }
+
+
+        /* =================================================
+           LEAFLET DARKER CONTROLS
+           ================================================= */
+
+        .leaflet-control-zoom a {
+
+            background: #111 !important;
+
+            color: #ffffff !important;
+
+            border-color: #333 !important;
+
+        }
+
+
+        .leaflet-control-attribution {
+
+            background:
+                rgba(0,0,0,0.65) !important;
+
+            color: #ffffff !important;
+
+        }
+
+
+        .leaflet-control-attribution a {
+
+            color: #00aaff !important;
+
+        }
+
+
+        /* =================================================
+           MOBILE / SMALL SCREEN
+           ================================================= */
+
+        @media (max-width: 1100px) {
+
+            html,
+            body {
+
+                overflow: auto;
+
+            }
+
+
+            .driver-dashboard {
+
+                min-width: 0;
+
+                width: 100%;
+
+                height: auto;
+
+                min-height: 100vh;
+
+                grid-template-columns:
+                    110px
+                    1fr
+                    1fr;
+
+                grid-template-rows:
+                    62px
+                    420px
+                    130px
+                    60px
+                    60px;
+
+                gap: 5px;
+
+            }
+
+
+            .title-panel {
+
+                grid-column: 2 / 4;
+
+            }
+
+
+            .slope-panel {
+
+                display: none;
+
+            }
+
+
+            .main-center {
+
+                grid-column: 2 / 4;
+
+                grid-row: 2;
+
+            }
+
+
+            .map-panel {
+
+                grid-column: 1 / 4;
+
+                grid-row: 3;
+
+                height: 220px;
+
+            }
+
+
+            .bottom-data {
+
+                grid-column: 1 / 4;
+
+                grid-row: 4;
+
+            }
+
+
+            .system-panel {
+
+                grid-column: 1 / 4;
+
+                grid-row: 5;
+
+            }
+
+
+            .speed-value {
+
+                font-size: 100px;
+
+            }
+
+
+            .throttle-bar {
+
+                min-height: 250px;
+
+            }
+
+        }
+
+
+        /* =================================================
+           PORTRAIT MOBILE
+           ================================================= */
+
+        @media (max-width: 650px) {
+
+            body {
+
+                padding: 4px;
+
+                overflow: auto;
+
+            }
+
+
+            .driver-dashboard {
+
+                display: flex;
+
+                flex-direction: column;
+
+                min-width: 0;
+
+                height: auto;
+
+                min-height: 100vh;
+
+            }
+
+
+            .status-panel {
+
+                height: 48px;
+
+                min-height: 48px;
+
+            }
+
+
+            .title-panel {
+
+                height: 58px;
+
+                min-height: 58px;
+
+                order: 1;
+
+            }
+
+
+            .status-panel {
+
+                order: 0;
+
+            }
+
+
+            .throttle-panel {
+
+                height: 300px;
+
+                min-height: 300px;
+
+                order: 2;
+
+            }
+
+
+            .main-center {
+
+                order: 3;
+
+                display: flex;
+
+                flex-direction: column;
+
+                height: 430px;
+
+                min-height: 430px;
+
+            }
+
+
+            .speed-panel {
+
+                height: 270px;
+
+                min-height: 270px;
+
+            }
+
+
+            .power-row {
+
+                height: 150px;
+
+            }
+
+
+            .map-panel {
+
+                order: 4;
+
+                height: 230px;
+
+                min-height: 230px;
+
+            }
+
+
+            .bottom-data {
+
+                order: 5;
+
+                height: 60px;
+
+                min-height: 60px;
+
+                display: grid;
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+
+            }
+
+
+            .system-panel {
+
+                order: 6;
+
+                height: 60px;
+
+                min-height: 60px;
+
+            }
+
+
+            .team-title {
+
+                font-size: 25px;
+
+                letter-spacing: 3px;
+
+            }
+
+
+            .team-logo {
+
+                width: 45px;
+
+                height: 45px;
+
+            }
+
+
+            .speed-value {
+
+                font-size: 85px;
+
+            }
+
+
+            .fuel-power,
+            .motor-power {
+
+                font-size: 34px;
+
+            }
+
+
+            .system-message {
+
+                font-size: 20px;
+
+                letter-spacing: 2px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     DRIVER DASHBOARD
+     ========================================================= -->
+
+<div class="driver-dashboard">
+
+
+    <!-- =====================================================
+         CONNECTION
+         ===================================================== -->
+
+    <div class="panel status-panel">
+
+        <div
+            class="connection disconnected"
+            id="connectionStatus"
+        >
+
+            <span class="connection-dot"></span>
+
+            <span id="connectionText">
+                NO DATA
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TEAM LOGO / TITLE
+         ===================================================== -->
+
+    <div class="panel title-panel">
+
+        <div class="title-content">
+
+            <img
+                src="/logo.png"
+                class="team-logo"
+                alt="Team ReNew"
+                onerror="this.style.display='none'"
+            >
+
+            <div class="team-title">
+
+                TEAM <span>RENEW</span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SLOPE
+         ===================================================== -->
+
+    <div class="panel slope-panel">
+
+        <div class="section-label">
+
+            SLOPE
+
+        </div>
+
+        <div
+            class="slope-value"
+            id="slope"
+        >
+
+            --
+
+        </div>
+
+        <div class="data-unit">
+
+            DEG
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         THROTTLE
+         ===================================================== -->
+
+    <div class="panel throttle-panel">
+
+        <div class="vertical-label">
+
+            THROTTLE
+
+        </div>
+
+
+        <div class="throttle-bar">
+
+            <div
+                class="throttle-fill"
+                id="throttleFill"
+            ></div>
+
+
+            <div
+                class="throttle-value"
+                id="throttleValue"
+            >
+
+                0%
+
+            </div>
+
+        </div>
+
+
+        <div class="throttle-title">
+
+            THROTTLE %
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         CENTER
+         ===================================================== -->
+
+    <div class="main-center">
+
+
+        <!-- =================================================
+             SPEED
+             ================================================= -->
+
+        <div class="panel speed-panel">
+
+            <div class="speed-label">
+
+                SPEED
+
+            </div>
+
+
+            <div
+                class="speed-value"
+                id="speed"
+            >
+
+                0
+
+            </div>
+
+
+            <div class="speed-unit">
+
+                KM/H
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             POWER
+             ================================================= -->
+
+        <div class="power-row">
+
+
+            <div class="panel power-panel">
+
+                <div class="power-label">
+
+                    FUEL CELL POWER
+
+                </div>
+
+
+                <div
+                    class="fuel-power"
+                    id="fuelPower"
+                >
+
+                    0
+
+                </div>
+
+
+                <div class="power-unit">
+
+                    W
+
+                </div>
+
+            </div>
+
+
+            <div class="panel power-panel">
+
+                <div class="power-label">
+
+                    MOTOR POWER
+
+                </div>
+
+
+                <div
+                    class="motor-power"
+                    id="motorPower"
+                >
+
+                    0
+
+                </div>
+
+
+                <div class="power-unit">
+
+                    W
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAP
+         ===================================================== -->
+
+    <div class="panel map-panel">
+
+
+        <div class="map-header">
+
+            <div class="map-title">
+
+                LIVE MAP
+
+            </div>
+
+
+            <button
+                class="clear-button"
+                id="clearRoute"
+            >
+
+                CLEAR
+
+            </button>
+
+        </div>
+
+
+        <div id="map"></div>
+
+
+        <div
+            class="route-status"
+            id="routeStatus"
+        >
+
+            Route: 0 points
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         BOTTOM DATA
+         ===================================================== -->
+
+    <div class="bottom-data">
+
+
+        <!-- ACCELERATION -->
+
+        <div class="panel data-box">
+
+            <span class="data-label">
+
+                ACCEL
+
+            </span>
+
+            <span
+                class="data-value"
+                id="acceleration"
+            >
+
+                0.00
+
+            </span>
+
+            <span class="data-unit">
+
+                m/s²
+
+            </span>
+
+        </div>
+
+
+        <!-- DISTANCE -->
+
+        <div class="panel data-box">
+
+            <span class="data-label">
+
+                DIST
+
+            </span>
+
+            <span
+                class="data-value"
+                id="distance"
+            >
+
+                0.0
+
+            </span>
+
+            <span class="data-unit">
+
+                m
+
+            </span>
+
+        </div>
+
+
+        <!-- DECELERATION -->
+
+        <div class="panel data-box">
+
+            <span class="data-label">
+
+                DECEL
+
+            </span>
+
+            <span
+                class="data-value"
+                id="deceleration"
+            >
+
+                0.00
+
+            </span>
+
+            <span class="data-unit">
+
+                m/s²
+
+            </span>
+
+        </div>
+
+
+        <!-- TEMPERATURE -->
+
+        <div class="panel data-box">
+
+            <span class="data-label">
+
+                TEMP
+
+            </span>
+
+            <span
+                class="data-value"
+                id="temperature"
+            >
+
+                0.0
+
+            </span>
+
+            <span class="data-unit">
+
+                °C
+
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SYSTEM STATUS
+         ===================================================== -->
+
+    <div
+        class="panel system-panel"
+        id="systemPanel"
+    >
+
+        <div
+            class="system-message"
+            id="systemMessage"
+        >
+
+            SYSTEM NORMAL
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script>
+
+
+    // ========================================================
+    // SOCKET.IO
+    // ========================================================
+
+    const socket = io();
+
+
+    // ========================================================
+    // DOM ELEMENTS
+    // ========================================================
+
+    const connectionStatus =
+        document.getElementById(
+            "connectionStatus"
+        );
+
+    const connectionText =
+        document.getElementById(
+            "connectionText"
+        );
+
+
+    const speedElement =
+        document.getElementById(
+            "speed"
+        );
+
+
+    const throttleFill =
+        document.getElementById(
+            "throttleFill"
+        );
+
+
+    const throttleValue =
+        document.getElementById(
+            "throttleValue"
+        );
+
+
+    const fuelPowerElement =
+        document.getElementById(
+            "fuelPower"
+        );
+
+
+    const motorPowerElement =
+        document.getElementById(
+            "motorPower"
+        );
+
+
+    const accelerationElement =
+        document.getElementById(
+            "acceleration"
+        );
+
+
+    const decelerationElement =
+        document.getElementById(
+            "deceleration"
+        );
+
+
+    const temperatureElement =
+        document.getElementById(
+            "temperature"
+        );
+
+
+    const distanceElement =
+        document.getElementById(
+            "distance"
+        );
+
+
+    const slopeElement =
+        document.getElementById(
+            "slope"
+        );
+
+
+    const systemPanel =
+        document.getElementById(
+            "systemPanel"
+        );
+
+
+    const systemMessage =
+        document.getElementById(
+            "systemMessage"
+        );
+
+
+    const routeStatus =
+        document.getElementById(
+            "routeStatus"
+        );
+
+
+    const clearRouteButton =
+        document.getElementById(
+            "clearRoute"
+        );
+
+
+    // ========================================================
+    // TELEMETRY TIMEOUT
+    // ========================================================
+
+    let lastTelemetryTime = 0;
+
+
+    const TELEMETRY_TIMEOUT = 3000;
+
+
+    // ========================================================
+    // CONNECTION STATUS
+    // ========================================================
+
+    function setConnected() {
+
+        connectionStatus.classList.remove(
+            "disconnected"
+        );
+
+        connectionStatus.classList.add(
+            "connected"
+        );
+
+        connectionText.textContent =
+            "CONNECTED";
+
+    }
+
+
+    function setDisconnected(text) {
+
+        connectionStatus.classList.remove(
+            "connected"
+        );
+
+        connectionStatus.classList.add(
+            "disconnected"
+        );
+
+        connectionText.textContent =
+            text;
+
+    }
+
+
+    // ========================================================
+    // SOCKET CONNECT
+    // ========================================================
+
+    socket.on("connect", () => {
+
+        console.log(
+            "Driver dashboard connected"
+        );
+
+    });
+
+
+    // ========================================================
+    // SOCKET DISCONNECT
+    // ========================================================
+
+    socket.on("disconnect", () => {
+
+        console.log(
+            "Driver dashboard disconnected"
+        );
+
+        setDisconnected(
+            "DISCONNECTED"
+        );
+
+    });
+
+
+    // ========================================================
+    // TELEMETRY TIME CHECK
+    // ========================================================
+
+    setInterval(() => {
+
+        if (
+            lastTelemetryTime !== 0 &&
+            Date.now() - lastTelemetryTime
+                <= TELEMETRY_TIMEOUT
+        ) {
+
+            setConnected();
+
+        }
+
+        else if (
+            lastTelemetryTime !== 0
+        ) {
+
+            setDisconnected(
+                "NO DATA"
+            );
+
+        }
+
+    }, 500);
+
+
+    // ========================================================
+    // HELPER
+    // ========================================================
+
+    function numberValue(
+        value,
+        decimals = 2
+    ) {
+
+        const n = Number(value);
+
+        if (
+            Number.isFinite(n)
+        ) {
+
+            return n.toFixed(decimals);
+
+        }
+
+        return "--";
+
+    }
+
+
+    // ========================================================
+    // SOCKET TELEMETRY
+    // ========================================================
+
+    socket.on(
+
+        "telemetry",
+
+        (data) => {
+
+
+            console.log(
+                "Driver telemetry:",
+                data
+            );
+
+
+            // =================================================
+            // VERY IMPORTANT
+            // This fixes NO DATA indicator
+            // =================================================
+
+            lastTelemetryTime =
+                Date.now();
+
+
+            setConnected();
+
+
+            // =================================================
+            // SPEED
+            // =================================================
+
+            if (
+                data.speed_kmh !== undefined
+            ) {
+
+                speedElement.textContent =
+                    numberValue(
+                        data.speed_kmh,
+                        1
+                    );
+
+            }
+
+
+            // =================================================
+            // THROTTLE
+            // =================================================
+
+            if (
+                data.throttle !== undefined
+            ) {
+
+                let throttle =
+                    Number(
+                        data.throttle
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        throttle
+                    )
+                ) {
+
+                    throttle = 0;
+
+                }
+
+
+                throttle =
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            throttle
+                        )
+                    );
+
+
+                throttleFill.style.height =
+                    throttle + "%";
+
+
+                throttleValue.textContent =
+                    throttle.toFixed(1)
+                    + "%";
+
+            }
+
+
+            // =================================================
+            // ACCELERATION
+            // =================================================
+
+            if (
+                data.accel !== undefined
+            ) {
+
+                accelerationElement.textContent =
+                    numberValue(
+                        data.accel,
+                        2
+                    );
+
+            }
+
+
+            // =================================================
+            // DECELERATION
+            // =================================================
+
+            if (
+                data.decel !== undefined
+            ) {
+
+                decelerationElement.textContent =
+                    numberValue(
+                        data.decel,
+                        2
+                    );
+
+            }
+
+
+            // =================================================
+            // SLOPE
+            // =================================================
+
+            if (
+                data.slope !== undefined
+            ) {
+
+                slopeElement.textContent =
+                    numberValue(
+                        data.slope,
+                        1
+                    ) + "°";
+
+            }
+
+
+            // =================================================
+            // DISTANCE
+            // =================================================
+
+            if (
+                data.distance_m !== undefined
+            ) {
+
+                distanceElement.textContent =
+                    numberValue(
+                        data.distance_m,
+                        1
+                    );
+
+            }
+
+
+            // =================================================
+            // MOTOR POWER
+            // =================================================
+
+            if (
+                data.m_power !== undefined
+            ) {
+
+                motorPowerElement.textContent =
+                    numberValue(
+                        data.m_power,
+                        0
+                    );
+
+            }
+
+
+            // =================================================
+            // FUEL CELL POWER
+            // =================================================
+
+            if (
+                data.fc &&
+                data.fc.power !== undefined
+            ) {
+
+                fuelPowerElement.textContent =
+                    numberValue(
+                        data.fc.power,
+                        0
+                    );
+
+            }
+
+
+            // =================================================
+            // TEMPERATURE
+            //
+            // Driver display uses DS18B20 temperature.
+            // =================================================
+
+            if (
+                data.ds18b20_temp !== undefined
+            ) {
+
+                temperatureElement.textContent =
+                    numberValue(
+                        data.ds18b20_temp,
+                        1
+                    );
+
+            }
+
+
+            // =================================================
+            // SYSTEM STATUS
+            // =================================================
+
+            updateSystemStatus(
+                data
+            );
+
+
+            // =================================================
+            // GPS
+            // =================================================
+
+            if (
+                data.gps &&
+                data.gps.lat !== undefined &&
+                data.gps.lon !== undefined
+            ) {
+
+                updateVehiclePosition(
+
+                    Number(
+                        data.gps.lat
+                    ),
+
+                    Number(
+                        data.gps.lon
+                    )
+
+                );
+
+            }
+
+        }
+
+    );
+
+
+    // ========================================================
+    // SYSTEM STATUS
+    // ========================================================
+
+    function updateSystemStatus(data) {
+
+        let warning = false;
+
+        let message =
+            "SYSTEM NORMAL";
+
+
+        // ================================================
+        // FUEL CELL ERROR
+        // ================================================
+
+        if (
+            data.fc &&
+            data.fc.error_flag !== undefined &&
+            Number(data.fc.error_flag) !== 0
+        ) {
+
+            warning = true;
+
+            message =
+                "FUEL CELL ERROR";
+
+        }
+
+
+        // ================================================
+        // HYDROGEN LEAK
+        // ================================================
+
+        if (
+            data.fc &&
+            data.fc.h2_leak_volts !== undefined
+        ) {
+
+            const leak =
+                Number(
+                    data.fc.h2_leak_volts
+                );
+
+
+            /*
+             * Adjust this threshold later
+             * according to your actual fuel-cell
+             * sensor specification.
+             */
+
+            if (
+                Number.isFinite(leak) &&
+                leak >= 2.5
+            ) {
+
+                warning = true;
+
+                message =
+                    "HYDROGEN LEAK WARNING";
+
+            }
+
+        }
+
+
+        // ================================================
+        // HIGH TEMPERATURE
+        // ================================================
+
+        if (
+            data.ds18b20_temp !== undefined
+        ) {
+
+            const temperature =
+                Number(
+                    data.ds18b20_temp
+                );
+
+
+            if (
+                Number.isFinite(
+                    temperature
+                ) &&
+                temperature >= 70
+            ) {
+
+                warning = true;
+
+                message =
+                    "HIGH TEMPERATURE";
+
+            }
+
+        }
+
+
+        // ================================================
+        // UPDATE DISPLAY
+        // ================================================
+
+        systemMessage.textContent =
+            message;
+
+
+        if (warning) {
+
+            systemPanel.classList.add(
+                "warning"
+            );
+
+        }
+
+        else {
+
+            systemPanel.classList.remove(
+                "warning"
+            );
+
+        }
+
+    }
+
+
+    // ========================================================
+    // MAP DEFAULT LOCATION
+    // ========================================================
+
+    const defaultLat =
+        11.0789;
+
+
+    const defaultLon =
+        76.9860;
+
+
+    // ========================================================
+    // CREATE MAP
+    // ========================================================
+
+    const map =
+        L.map(
+            "map",
+            {
+
+                zoomControl: true,
+
+                scrollWheelZoom: true,
+
+                doubleClickZoom: true,
+
+                dragging: true,
+
+                touchZoom: true,
+
+                keyboard: true
+
+            }
+        ).setView(
+
+            [
+                defaultLat,
+                defaultLon
+            ],
+
+            18
+
+        );
+
+
+    // ========================================================
+    // OPEN STREET MAP
+    // ========================================================
+
+    L.tileLayer(
+
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+        {
+
+            maxZoom: 21,
+
+            minZoom: 1,
+
+            attribution:
+                "&copy; OpenStreetMap contributors"
+
+        }
+
+    ).addTo(map);
+
+
+    // ========================================================
+    // VEHICLE MARKER
+    // ========================================================
+
+    const marker =
+        L.marker(
+
+            [
+                defaultLat,
+                defaultLon
+            ]
+
+        ).addTo(map);
+
+
+    // ========================================================
+    // ROUTE
+    // ========================================================
+
+    let route = [];
+
+
+    const polyline =
+        L.polyline(
+
+            route,
+
+            {
+
+                color: "#00aaff",
+
+                weight: 4,
+
+                opacity: 0.9,
+
+                smoothFactor: 1.5
+
+            }
+
+        ).addTo(map);
+
+
+    // ========================================================
+    // LAST ACCEPTED GPS POINT
+    // ========================================================
+
+    let lastRoutePoint = null;
+
+
+    // ========================================================
+    // GPS FILTER
+    // ========================================================
+
+    /*
+     * Your vehicle is expected to operate around
+     * competition speeds, so very large jumps
+     * are almost certainly bad GPS data.
+     */
+
+    const MIN_ROUTE_DISTANCE = 1.5;
+
+    const MAX_ROUTE_DISTANCE = 15;
+
+
+    // ========================================================
+    // HAVERSINE DISTANCE
+    // ========================================================
+
+    function distanceBetweenPoints(
+
+        lat1,
+        lon1,
+        lat2,
+        lon2
+
+    ) {
+
+        const R = 6371000;
+
+
+        const dLat =
+            (
+                lat2 - lat1
+            ) *
+            Math.PI / 180;
+
+
+        const dLon =
+            (
+                lon2 - lon1
+            ) *
+            Math.PI / 180;
+
+
+        const a =
+
+            Math.sin(
+                dLat / 2
+            ) *
+            Math.sin(
+                dLat / 2
+            )
+
+            +
+
+            Math.cos(
+                lat1 *
+                Math.PI / 180
+            )
+
+            *
+
+            Math.cos(
+                lat2 *
+                Math.PI / 180
+            )
+
+            *
+
+            Math.sin(
+                dLon / 2
+            )
+
+            *
+
+            Math.sin(
+                dLon / 2
+            );
+
+
+        const c =
+
+            2 *
+
+            Math.atan2(
+
+                Math.sqrt(a),
+
+                Math.sqrt(
+                    1 - a
+                )
+
+            );
+
+
+        return R * c;
+
+    }
+
+
+    // ========================================================
+    // UPDATE VEHICLE POSITION
+    // ========================================================
+
+    function updateVehiclePosition(
+
+        latitude,
+        longitude
+
+    ) {
+
+
+        // ================================================
+        // VALIDATE GPS
+        // ================================================
+
+        if (
+
+            !Number.isFinite(
+                latitude
+            )
+
+            ||
+
+            !Number.isFinite(
+                longitude
+            )
+
+            ||
+
+            latitude < -90
+
+            ||
+
+            latitude > 90
+
+            ||
+
+            longitude < -180
+
+            ||
+
+            longitude > 180
+
+        ) {
+
+            return;
+
+        }
+
+
+        const currentPoint = [
+
+            latitude,
+            longitude
+
+        ];
+
+
+        // ================================================
+        // ALWAYS MOVE MARKER
+        // ================================================
+
+        marker.setLatLng(
+            currentPoint
+        );
+
+
+        // ================================================
+        // FIRST ROUTE POINT
+        // ================================================
+
+        if (
+            lastRoutePoint === null
+        ) {
+
+            route.push(
+                currentPoint
+            );
+
+
+            lastRoutePoint =
+                currentPoint;
+
+
+            polyline.setLatLngs(
+                route
+            );
+
+
+            updateRouteStatus();
+
+
+            map.setView(
+
+                currentPoint,
+
+                map.getZoom(),
+
+                {
+                    animate: true
+                }
+
+            );
+
+
+            return;
+
+        }
+
+
+        // ================================================
+        // CALCULATE GPS MOVEMENT
+        // ================================================
+
+        const movement =
+            distanceBetweenPoints(
+
+                lastRoutePoint[0],
+
+                lastRoutePoint[1],
+
+                latitude,
+
+                longitude
+
+            );
+
+
+        // ================================================
+        // IGNORE TINY GPS JITTER
+        // ================================================
+
+        if (
+            movement <
+            MIN_ROUTE_DISTANCE
+        ) {
+
+            return;
+
+        }
+
+
+        // ================================================
+        // IGNORE LARGE GPS JUMPS
+        // ================================================
+
+        if (
+            movement >
+            MAX_ROUTE_DISTANCE
+        ) {
+
+            console.warn(
+
+                "GPS jump ignored:",
+
+                movement.toFixed(1),
+
+                "m"
+
+            );
+
+
+            /*
+             * Do NOT add this point to route.
+             *
+             * Marker still shows actual latest
+             * GPS position.
+             */
+
+            return;
+
+        }
+
+
+        // ================================================
+        // ADD GOOD GPS POINT
+        // ================================================
+
+        route.push(
+            currentPoint
+        );
+
+
+        lastRoutePoint =
+            currentPoint;
+
+
+        // ================================================
+        // LIMIT ROUTE SIZE
+        // ================================================
+
+        const MAX_ROUTE_POINTS =
+            2000;
+
+
+        if (
+            route.length >
+            MAX_ROUTE_POINTS
+        ) {
+
+            route.shift();
+
+        }
+
+
+        // ================================================
+        // UPDATE POLYLINE
+        // ================================================
+
+        polyline.setLatLngs(
+            route
+        );
+
+
+        // ================================================
+        // UPDATE STATUS
+        // ================================================
+
+        updateRouteStatus();
+
+
+        // ================================================
+        // FOLLOW VEHICLE
+        // ================================================
+
+        map.panTo(
+
+            currentPoint,
+
+            {
+
+                animate: true,
+
+                duration: 0.4
+
+            }
+
+        );
+
+    }
+
+
+    // ========================================================
+    // ROUTE STATUS
+    // ========================================================
+
+    function updateRouteStatus() {
+
+        routeStatus.textContent =
+            "Route: "
+            +
+            route.length
+            +
+            " points";
+
+    }
+
+
+    // ========================================================
+    // CLEAR ROUTE
+    // ========================================================
+
+    clearRouteButton.addEventListener(
+
+        "click",
+
+        () => {
+
+
+            route = [];
+
+
+            lastRoutePoint =
+                null;
+
+
+            polyline.setLatLngs(
+                []
+            );
+
+
+            updateRouteStatus();
+
+
+            console.log(
+                "Route cleared"
+            );
+
+        }
+
+    );
+
+
+    // ========================================================
+    // INITIAL MAP RESIZE
+    // ========================================================
+
+    setTimeout(
+
+        () => {
+
+            map.invalidateSize();
+
+        },
+
+        300
+
+    );
+
+
+    // ========================================================
+    // RESIZE MAP
+    // ========================================================
+
+    window.addEventListener(
+
+        "resize",
+
+        () => {
+
+            map.invalidateSize();
+
+        }
+
+    );
+
+
+</script>
+
+
+</body>
+
+</html>

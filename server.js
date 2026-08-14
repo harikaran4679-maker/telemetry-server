@@ -7,8 +7,10 @@ require("dotenv").config();
 
 const express = require("express");
 const http = require("http");
+const path = require("path");
 const mqtt = require("mqtt");
 const { Server } = require("socket.io");
+
 const {
     InfluxDB,
     Point
@@ -30,8 +32,39 @@ const io = new Server(server, {
 });
 
 
-// Serve dashboard from /public
-app.use(express.static("public"));
+// ============================================================
+// SERVE DASHBOARDS
+// ============================================================
+
+app.use(express.static(path.join(__dirname, "public")));
+
+
+// ============================================================
+// TEAM DASHBOARD
+// http://localhost:4000/
+// ============================================================
+
+app.get("/", (req, res) => {
+
+    res.sendFile(
+        path.join(__dirname, "public", "index.html")
+    );
+
+});
+
+
+// ============================================================
+// DRIVER DASHBOARD
+// http://localhost:4000/driver
+// ============================================================
+
+app.get("/driver", (req, res) => {
+
+    res.sendFile(
+        path.join(__dirname, "public", "driver.html")
+    );
+
+});
 
 
 // ============================================================
@@ -48,37 +81,55 @@ const PORT = Number(process.env.PORT) || 4000;
 console.log("");
 console.log("Checking configuration...");
 
+
 if (!process.env.INFLUX_URL) {
+
     console.error("✗ INFLUX_URL is missing");
+
 }
 
 if (!process.env.INFLUX_TOKEN) {
+
     console.error("✗ INFLUX_TOKEN is missing");
+
 }
 
 if (!process.env.INFLUX_ORG) {
+
     console.error("✗ INFLUX_ORG is missing");
+
 }
 
 if (!process.env.INFLUX_BUCKET) {
+
     console.error("✗ INFLUX_BUCKET is missing");
+
 }
 
 if (!process.env.MQTT_HOST) {
+
     console.error("✗ MQTT_HOST is missing");
+
 }
 
 if (!process.env.MQTT_USERNAME) {
+
     console.error("✗ MQTT_USERNAME is missing");
+
 }
 
 if (!process.env.MQTT_PASSWORD) {
+
     console.error("✗ MQTT_PASSWORD is missing");
+
 }
 
 if (!process.env.MQTT_TOPIC) {
+
     console.error("✗ MQTT_TOPIC is missing");
+
 }
+
 
 console.log("Configuration check complete.");
 console.log("");
@@ -100,23 +151,6 @@ const influxDB = new InfluxDB({
 // ============================================================
 // INFLUXDB WRITE API
 // ============================================================
-//
-// IMPORTANT:
-//
-// getWriteApi(
-//     organization,
-//     bucket,
-//     precision,
-//     writeOptions
-// )
-//
-// "ms" = millisecond precision
-//
-// batchSize = number of points before automatic write
-//
-// flushInterval = maximum time before automatic flush
-//
-// ============================================================
 
 const writeApi = influxDB.getWriteApi(
 
@@ -128,14 +162,15 @@ const writeApi = influxDB.getWriteApi(
 
     {
         batchSize: 10,
-
         flushInterval: 1000
     }
 
 );
 
 
-// Default tags
+// ============================================================
+// DEFAULT INFLUX TAG
+// ============================================================
 
 writeApi.useDefaultTags({
 
@@ -185,7 +220,11 @@ server.listen(PORT, () => {
     );
 
     console.log(
-        `Dashboard: http://localhost:${PORT}`
+        `Team Dashboard: http://localhost:${PORT}`
+    );
+
+    console.log(
+        `Driver Dashboard: http://localhost:${PORT}/driver`
     );
 
     console.log("==============================================");
@@ -280,7 +319,7 @@ mqttClient.on("offline", () => {
 
 
 // ============================================================
-// MQTT END
+// MQTT CLOSE
 // ============================================================
 
 mqttClient.on("close", () => {
@@ -318,9 +357,7 @@ function numberOrNull(value) {
 function addFloatField(
 
     point,
-
     fieldName,
-
     value
 
 ) {
@@ -332,7 +369,6 @@ function addFloatField(
         point.floatField(
 
             fieldName,
-
             number
 
         );
@@ -369,6 +405,7 @@ mqttClient.on(
                 "========== MQTT TELEMETRY =========="
             );
 
+
             console.dir(
 
                 data,
@@ -382,7 +419,18 @@ mqttClient.on(
 
 
             // =================================================
-            // SEND COMPLETE DATA TO DASHBOARD
+            // SEND TELEMETRY TO ALL DASHBOARDS
+            // =================================================
+            //
+            // IMPORTANT:
+            // The received JSON is stored in "data".
+            //
+            // DO NOT use:
+            //
+            // io.emit("telemetry", telemetry);
+            //
+            // because "telemetry" does not exist.
+            //
             // =================================================
 
             io.emit(
@@ -413,8 +461,11 @@ mqttClient.on(
             // =================================================
 
             if (
+
                 data.vehicle !== undefined &&
+
                 data.vehicle !== null
+
             ) {
 
                 point.tag(
@@ -435,9 +486,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "throttle",
-
                 data.throttle
 
             );
@@ -446,9 +495,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "accel",
-
                 data.accel
 
             );
@@ -457,9 +504,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "decel",
-
                 data.decel
 
             );
@@ -468,9 +513,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "slope",
-
                 data.slope
 
             );
@@ -479,9 +522,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "ds18b20_temp",
-
                 data.ds18b20_temp
 
             );
@@ -490,9 +531,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "bus_voltage",
-
                 data.bus_voltage
 
             );
@@ -501,9 +540,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "motor_current",
-
                 data.motor_current
 
             );
@@ -512,9 +549,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "m_rpm",
-
                 data.m_rpm
 
             );
@@ -523,9 +558,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "m_power",
-
                 data.m_power
 
             );
@@ -534,9 +567,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "speed_kmh",
-
                 data.speed_kmh
 
             );
@@ -545,9 +576,7 @@ mqttClient.on(
             addFloatField(
 
                 point,
-
                 "distance_m",
-
                 data.distance_m
 
             );
@@ -565,13 +594,10 @@ mqttClient.on(
 
             ) {
 
-
                 addFloatField(
 
                     point,
-
                     "fc_voltage",
-
                     data.fc.voltage
 
                 );
@@ -580,9 +606,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_current",
-
                     data.fc.current
 
                 );
@@ -591,9 +615,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_power",
-
                     data.fc.power
 
                 );
@@ -602,9 +624,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_stack_temp",
-
                     data.fc.stack_temp
 
                 );
@@ -613,9 +633,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_h2_leak_volts",
-
                     data.fc.h2_leak_volts
 
                 );
@@ -624,9 +642,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_env_temp",
-
                     data.fc.env_temp
 
                 );
@@ -635,9 +651,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_batt_voltage",
-
                     data.fc.batt_voltage
 
                 );
@@ -646,9 +660,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "fc_batt_current",
-
                     data.fc.batt_current
 
                 );
@@ -691,13 +703,10 @@ mqttClient.on(
 
             ) {
 
-
                 addFloatField(
 
                     point,
-
                     "gps_lat",
-
                     data.gps.lat
 
                 );
@@ -706,9 +715,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "gps_lon",
-
                     data.gps.lon
 
                 );
@@ -717,9 +724,7 @@ mqttClient.on(
                 addFloatField(
 
                     point,
-
                     "gps_alt",
-
                     data.gps.alt
 
                 );
@@ -732,7 +737,9 @@ mqttClient.on(
             // =================================================
 
             if (
+
                 data.connected !== undefined
+
             ) {
 
                 point.intField(
@@ -747,7 +754,7 @@ mqttClient.on(
 
 
             // =================================================
-            // WRITE POINT TO INFLUXDB
+            // WRITE TO INFLUXDB
             // =================================================
 
             writeApi.writePoint(point);
@@ -782,7 +789,7 @@ mqttClient.on(
 
 
 // ============================================================
-// DASHBOARD SOCKET.IO CONNECTION
+// SOCKET.IO CONNECTION
 // ============================================================
 
 io.on(
