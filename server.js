@@ -6,17 +6,36 @@
 // HiveMQ Cloud MQTT
 //   ↓
 // Node.js / Render
-//   ├── Team Dashboard  → /
-//   ├── Driver Dashboard → /driver
+//   ├── Team Dashboard      → /
+//   ├── Driver Dashboard    → /driver
 //   ├── Shared GPS Route
 //   └── InfluxDB
 //
-// IMPORTANT:
-// - Local development: http://localhost:4000
-// - Render production: https://YOUR-SERVICE.onrender.com
+// TELEMETRY FLOW
 //
-// ESP32 continues publishing to HiveMQ.
-// ESP32 does NOT connect directly to Render.
+// ESP32
+//   ↓
+// HiveMQ
+//   ↓
+// Node.js
+//   ↓
+// ONE ENRICHED TELEMETRY PACKET
+//   ├──→ Team Dashboard
+//   ├──→ Driver Dashboard
+//   └──→ InfluxDB
+//
+// IMPORTANT
+//
+// The same telemetry object contains:
+//
+// telemetry_id
+// server_timestamp
+// sensor values
+//
+// Team and Driver receive the SAME object.
+// InfluxDB receives the SAME telemetry_id and
+// server_timestamp.
+//
 // ============================================================
 
 require("dotenv").config();
@@ -32,151 +51,175 @@ const {
     Point
 } = require("@influxdata/influxdb-client");
 
+
 // ============================================================
 // EXPRESS
 // ============================================================
 
 const app = express();
 
-// Trust Render's reverse proxy
-app.set("trust proxy", 1);
+app.set(
+    "trust proxy",
+    1
+);
 
-// JSON support
-app.use(express.json());
+app.use(
+    express.json()
+);
+
 
 // ============================================================
 // HTTP SERVER
 // ============================================================
 
-const server = http.createServer(app);
+const server =
+    http.createServer(app);
+
 
 // ============================================================
 // SOCKET.IO
 // ============================================================
 
-const io = new Server(server, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-});
+const io =
+    new Server(
+        server,
+        {
+            cors: {
+                origin: "*",
+                methods: [
+                    "GET",
+                    "POST"
+                ]
+            }
+        }
+    );
+
 
 // ============================================================
 // PUBLIC FOLDER
 // ============================================================
 
-const PUBLIC_DIR = path.join(__dirname, "public");
+const PUBLIC_DIR =
+    path.join(
+        __dirname,
+        "public"
+    );
 
-app.use(express.static(PUBLIC_DIR));
+app.use(
+    express.static(
+        PUBLIC_DIR
+    )
+);
+
+
+// ============================================================
+// PORT
+// ============================================================
+//
+// IMPORTANT FOR RENDER:
+//
+// Render provides PORT automatically.
+//
+// The server MUST listen on:
+// 0.0.0.0
+//
+// ============================================================
+
+const PORT =
+    Number(
+        process.env.PORT
+    ) || 10000;
+
+
+// ============================================================
+// PUBLIC URL
+// ============================================================
+//
+// Render automatically provides:
+// RENDER_EXTERNAL_URL
+//
+// Example:
+//
+// https://team-renew-telemetry.onrender.com
+//
+// For local development:
+//
+// http://localhost:4000
+//
+// You can also manually set PUBLIC_URL.
+//
+// ============================================================
+
+const PUBLIC_URL =
+    process.env.PUBLIC_URL ||
+    process.env.RENDER_EXTERNAL_URL ||
+    `http://localhost:${PORT}`;
+
 
 // ============================================================
 // SHARED GPS ROUTE
-// ============================================================
-//
-// Both dashboards use this same server-side route.
-//
-// Team Dashboard ─────┐
-//                     ├── routeHistory
-// Driver Dashboard ───┘
-//
 // ============================================================
 
 const routeHistory = [];
 
 const MAX_ROUTE_POINTS = 5000;
 
-// ============================================================
-// TEAM DASHBOARD
-// ============================================================
-
-app.get("/", (req, res) => {
-
-    res.sendFile(
-        path.join(PUBLIC_DIR, "index.html")
-    );
-
-});
 
 // ============================================================
-// DRIVER DASHBOARD
+// TELEMETRY STATE
 // ============================================================
 
-app.get("/driver", (req, res) => {
+let telemetrySequence = 0;
 
-    res.sendFile(
-        path.join(PUBLIC_DIR, "driver.html")
-    );
+let lastTelemetry = null;
 
-});
+let lastTelemetryTime = null;
 
-// ============================================================
-// HEALTH CHECK
-// ============================================================
+let totalTelemetryPackets = 0;
 
-app.get("/health", (req, res) => {
+let invalidTelemetryPackets = 0;
 
-    res.status(200).json({
-
-        status: "ok",
-
-        service: "Team Renew Telemetry Server",
-
-        environment:
-            process.env.NODE_ENV || "development",
-
-        port: PORT,
-
-        routePoints:
-            routeHistory.length,
-
-        mqttConnected:
-            mqttClient.connected
-
-    });
-
-});
 
 // ============================================================
-// PORT
-// ============================================================
-//
-// Render automatically provides process.env.PORT.
-//
-// Local:
-// PORT=4000
-//
-// Render:
-// PORT=<Render assigned port>
-//
+// INFLUXDB CLIENT
 // ============================================================
 
-const PORT =
-    Number(process.env.PORT) || 4000;
+let influxDB = null;
+
+let writeApi = null;
+
 
 // ============================================================
-// PUBLIC URL
-// ============================================================
-//
-// Optional.
-//
-// Add this on Render:
-//
-// PUBLIC_URL=https://your-service.onrender.com
-//
-// It is only used for console information.
+// MQTT CLIENT
 // ============================================================
 
-const PUBLIC_URL =
-    process.env.PUBLIC_URL ||
-    `http://localhost:${PORT}`;
+let mqttClient = null;
+
 
 // ============================================================
-// CHECK ENVIRONMENT
+// CONFIGURATION CHECK
 // ============================================================
 
 console.log("");
-console.log("Checking configuration...");
+
+console.log(
+    "================================================"
+);
+
+console.log(
+    "Checking configuration..."
+);
+
+console.log(
+    "================================================"
+);
+
 console.log("");
+
+
+// ============================================================
+// REQUIRED VARIABLES
+// ============================================================
 
 const requiredVariables = [
 
@@ -192,19 +235,32 @@ const requiredVariables = [
 
 ];
 
+
+// ============================================================
+// CHECK VARIABLES
+// ============================================================
+
 let configurationOK = true;
 
-for (const variable of requiredVariables) {
+for (
+    const variable
+    of requiredVariables
+) {
 
-    if (!process.env[variable]) {
+    if (
+        !process.env[variable]
+    ) {
 
-        configurationOK = false;
+        configurationOK =
+            false;
 
         console.error(
             `✗ ${variable} is missing`
         );
 
-    } else {
+    }
+
+    else {
 
         console.log(
             `✓ ${variable} configured`
@@ -216,7 +272,14 @@ for (const variable of requiredVariables) {
 
 console.log("");
 
-if (!configurationOK) {
+
+// ============================================================
+// CONFIGURATION RESULT
+// ============================================================
+
+if (
+    !configurationOK
+) {
 
     console.error(
         "⚠ Some environment variables are missing."
@@ -228,55 +291,90 @@ if (!configurationOK) {
 
 }
 
-console.log(
-    "Configuration check complete."
-);
+else {
+
+    console.log(
+        "✓ All required environment variables configured."
+    );
+
+}
 
 console.log("");
 
-// ============================================================
-// INFLUXDB
-// ============================================================
-
-const influxDB = new InfluxDB({
-
-    url: process.env.INFLUX_URL,
-
-    token: process.env.INFLUX_TOKEN
-
-});
 
 // ============================================================
-// INFLUXDB WRITE API
+// INFLUXDB INITIALIZATION
 // ============================================================
 
-const writeApi = influxDB.getWriteApi(
+if (
+    process.env.INFLUX_URL &&
+    process.env.INFLUX_TOKEN &&
+    process.env.INFLUX_ORG &&
+    process.env.INFLUX_BUCKET
+) {
 
-    process.env.INFLUX_ORG,
+    influxDB =
+        new InfluxDB({
 
-    process.env.INFLUX_BUCKET,
+            url:
+                process.env.INFLUX_URL,
 
-    "ms",
+            token:
+                process.env.INFLUX_TOKEN
 
-    {
+        });
 
-        batchSize: 10,
 
-        flushInterval: 1000
+    // ========================================================
+    // INFLUX WRITE API
+    // ========================================================
 
-    }
+    writeApi =
+        influxDB.getWriteApi(
 
-);
+            process.env.INFLUX_ORG,
 
-// ============================================================
-// INFLUXDB DEFAULT TAGS
-// ============================================================
+            process.env.INFLUX_BUCKET,
 
-writeApi.useDefaultTags({
+            "ms",
 
-    source: "ESP32"
+            {
 
-});
+                batchSize: 10,
+
+                flushInterval: 1000
+
+            }
+
+        );
+
+
+    // ========================================================
+    // DEFAULT TAGS
+    // ========================================================
+
+    writeApi.useDefaultTags({
+
+        source:
+            "ESP32"
+
+    });
+
+
+    console.log(
+        "✓ InfluxDB initialized"
+    );
+
+}
+
+else {
+
+    console.error(
+        "✗ InfluxDB not initialized because configuration is incomplete."
+    );
+
+}
+
 
 // ============================================================
 // MQTT OPTIONS
@@ -288,9 +386,12 @@ const mqttOptions = {
         process.env.MQTT_HOST,
 
     port:
-        Number(process.env.MQTT_PORT) || 8883,
+        Number(
+            process.env.MQTT_PORT
+        ) || 8883,
 
-    protocol: "mqtts",
+    protocol:
+        "mqtts",
 
     username:
         process.env.MQTT_USERNAME,
@@ -298,40 +399,72 @@ const mqttOptions = {
     password:
         process.env.MQTT_PASSWORD,
 
-    reconnectPeriod: 2000,
+    reconnectPeriod:
+        2000,
 
-    connectTimeout: 10000,
+    connectTimeout:
+        10000,
 
-    clean: true
+    clean:
+        true
 
 };
+
 
 // ============================================================
 // MQTT CLIENT
 // ============================================================
 
-const mqttClient =
-    mqtt.connect(mqttOptions);
+if (
+    process.env.MQTT_HOST &&
+    process.env.MQTT_USERNAME &&
+    process.env.MQTT_PASSWORD &&
+    process.env.MQTT_TOPIC
+) {
+
+    mqttClient =
+        mqtt.connect(
+            mqttOptions
+        );
+
+}
+
+else {
+
+    console.error(
+        "✗ MQTT client not started because configuration is incomplete."
+    );
+
+}
+
 
 // ============================================================
 // SAFE NUMBER
 // ============================================================
 
-function numberOrNull(value) {
+function numberOrNull(
+    value
+) {
 
-    const number = Number(value);
+    const number =
+        Number(value);
+
 
     if (
-        Number.isFinite(number)
+        Number.isFinite(
+            number
+        )
     ) {
 
         return number;
 
     }
 
+
     return null;
 
 }
+
 
 // ============================================================
 // ADD FLOAT FIELD
@@ -344,9 +477,14 @@ function addFloatField(
 ) {
 
     const number =
-        numberOrNull(value);
+        numberOrNull(
+            value
+        );
 
-    if (number !== null) {
+
+    if (
+        number !== null
+    ) {
 
         point.floatField(
             fieldName,
@@ -356,6 +494,39 @@ function addFloatField(
     }
 
 }
+
+
+// ============================================================
+// ADD INTEGER FIELD
+// ============================================================
+
+function addIntegerField(
+    point,
+    fieldName,
+    value
+) {
+
+    const number =
+        numberOrNull(
+            value
+        );
+
+
+    if (
+        number !== null
+    ) {
+
+        point.intField(
+            fieldName,
+            Math.trunc(
+                number
+            )
+        );
+
+    }
+
+}
+
 
 // ============================================================
 // ADD ROUTE POINT
@@ -368,7 +539,7 @@ function addRoutePoint(
 ) {
 
     // --------------------------------------------------------
-    // Validate GPS
+    // Validate
     // --------------------------------------------------------
 
     if (
@@ -380,8 +551,25 @@ function addRoutePoint(
 
     }
 
+
     // --------------------------------------------------------
-    // Ignore zero coordinates
+    // Validate coordinate range
+    // --------------------------------------------------------
+
+    if (
+        lat < -90 ||
+        lat > 90 ||
+        lon < -180 ||
+        lon > 180
+    ) {
+
+        return;
+
+    }
+
+
+    // --------------------------------------------------------
+    // Ignore zero GPS
     // --------------------------------------------------------
 
     if (
@@ -393,15 +581,18 @@ function addRoutePoint(
 
     }
 
+
     // --------------------------------------------------------
     // Create route point
     // --------------------------------------------------------
 
     const routePoint = {
 
-        lat: lat,
+        lat:
+            lat,
 
-        lon: lon,
+        lon:
+            lon,
 
         alt:
             alt !== null
@@ -413,13 +604,15 @@ function addRoutePoint(
 
     };
 
+
     // --------------------------------------------------------
-    // Store route
+    // Store
     // --------------------------------------------------------
 
     routeHistory.push(
         routePoint
     );
+
 
     // --------------------------------------------------------
     // Limit memory
@@ -434,9 +627,9 @@ function addRoutePoint(
 
     }
 
+
     // --------------------------------------------------------
-    // Send ONLY new point
-    // to ALL connected dashboards
+    // Send to Team + Driver
     // --------------------------------------------------------
 
     io.emit(
@@ -446,8 +639,136 @@ function addRoutePoint(
 
 }
 
+
+// ============================================================
+// DASHBOARD ROUTES
+// ============================================================
+
+// ============================================================
+// TEAM DASHBOARD
+// ============================================================
+
+app.get(
+    "/",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                PUBLIC_DIR,
+                "index.html"
+            )
+        );
+
+    }
+);
+
+
+// ============================================================
+// DRIVER DASHBOARD
+// ============================================================
+
+app.get(
+    "/driver",
+    (req, res) => {
+
+        res.sendFile(
+            path.join(
+                PUBLIC_DIR,
+                "driver.html"
+            )
+        );
+
+    }
+);
+
+
+// ============================================================
+// HEALTH CHECK
+// ============================================================
+
+app.get(
+    "/health",
+    (req, res) => {
+
+        const mqttConnected =
+            mqttClient
+                ? mqttClient.connected
+                : false;
+
+
+        res.status(200).json({
+
+            status:
+                "ok",
+
+            service:
+                "Team Renew Telemetry Server",
+
+            environment:
+                process.env.NODE_ENV ||
+                "development",
+
+            port:
+                PORT,
+
+            publicUrl:
+                PUBLIC_URL,
+
+            mqttConnected:
+                mqttConnected,
+
+            mqttTopic:
+                process.env.MQTT_TOPIC ||
+                null,
+
+            influxConfigured:
+                Boolean(
+                    process.env.INFLUX_URL &&
+                    process.env.INFLUX_TOKEN &&
+                    process.env.INFLUX_ORG &&
+                    process.env.INFLUX_BUCKET
+                ),
+
+            routePoints:
+                routeHistory.length,
+
+            telemetryPackets:
+                totalTelemetryPackets,
+
+            invalidTelemetryPackets:
+                invalidTelemetryPackets,
+
+            telemetrySequence:
+                telemetrySequence,
+
+            lastTelemetryId:
+                lastTelemetry
+                    ? lastTelemetry.telemetry_id
+                    : null,
+
+            lastServerTimestamp:
+                lastTelemetry
+                    ? lastTelemetry.server_timestamp
+                    : null,
+
+            lastTelemetryReceived:
+                lastTelemetryTime
+
+        });
+
+    }
+);
+
+
 // ============================================================
 // SERVER START
+// ============================================================
+//
+// IMPORTANT FOR RENDER:
+//
+// 0.0.0.0
+// + process.env.PORT
+//
 // ============================================================
 
 server.listen(
@@ -459,24 +780,34 @@ server.listen(
     () => {
 
         console.log("");
-        console.log(
-            "================================================"
-        );
-        console.log(
-            "       TEAM RENEW TELEMETRY SERVER"
-        );
+
         console.log(
             "================================================"
         );
 
         console.log(
+            "       TEAM RENEW TELEMETRY SERVER"
+        );
+
+        console.log(
+            "================================================"
+        );
+
+        console.log("");
+
+        console.log(
             `Environment: ${
-                process.env.NODE_ENV || "development"
+                process.env.NODE_ENV ||
+                "development"
             }`
         );
 
         console.log(
             `Port: ${PORT}`
+        );
+
+        console.log(
+            "Host: 0.0.0.0"
         );
 
         console.log("");
@@ -503,6 +834,30 @@ server.listen(
             "Database: InfluxDB"
         );
 
+        console.log("");
+
+        console.log(
+            "Telemetry synchronization:"
+        );
+
+        console.log(
+            "✓ Same enriched packet → Team"
+        );
+
+        console.log(
+            "✓ Same enriched packet → Driver"
+        );
+
+        console.log(
+            "✓ Same telemetry_id → InfluxDB"
+        );
+
+        console.log(
+            "✓ Same server_timestamp → InfluxDB"
+        );
+
+        console.log("");
+
         console.log(
             "================================================"
         );
@@ -512,6 +867,16 @@ server.listen(
     }
 
 );
+
+
+// ============================================================
+// MQTT EVENTS
+// ============================================================
+
+if (
+    mqttClient
+) {
+
 
 // ============================================================
 // MQTT CONNECT
@@ -527,8 +892,10 @@ mqttClient.on(
             "✓ Connected to HiveMQ Cloud"
         );
 
+
         const topic =
             process.env.MQTT_TOPIC;
+
 
         mqttClient.subscribe(
 
@@ -540,7 +907,9 @@ mqttClient.on(
 
             (error) => {
 
-                if (error) {
+                if (
+                    error
+                ) {
 
                     console.error(
                         "✗ MQTT Subscribe Error:"
@@ -554,6 +923,7 @@ mqttClient.on(
 
                 }
 
+
                 console.log(
                     `✓ Subscribed to: ${topic}`
                 );
@@ -566,6 +936,7 @@ mqttClient.on(
 
 );
 
+
 // ============================================================
 // MQTT ERROR
 // ============================================================
@@ -576,21 +947,15 @@ mqttClient.on(
 
     (error) => {
 
-        console.error("");
-
         console.error(
-            "✗ MQTT Error:"
-        );
-
-        console.error(
+            "✗ MQTT Error:",
             error.message
         );
-
-        console.error("");
 
     }
 
 );
+
 
 // ============================================================
 // MQTT RECONNECT
@@ -610,6 +975,7 @@ mqttClient.on(
 
 );
 
+
 // ============================================================
 // MQTT OFFLINE
 // ============================================================
@@ -627,6 +993,7 @@ mqttClient.on(
     }
 
 );
+
 
 // ============================================================
 // MQTT CLOSE
@@ -646,6 +1013,7 @@ mqttClient.on(
 
 );
 
+
 // ============================================================
 // MQTT MESSAGE
 // ============================================================
@@ -654,7 +1022,10 @@ mqttClient.on(
 
     "message",
 
-    async (topic, message) => {
+    async (
+        topic,
+        message
+    ) => {
 
         try {
 
@@ -662,10 +1033,112 @@ mqttClient.on(
             // PARSE JSON
             // ==================================================
 
-            const data =
-                JSON.parse(
-                    message.toString()
+            const rawMessage =
+                message.toString();
+
+
+            let data;
+
+
+            try {
+
+                data =
+                    JSON.parse(
+                        rawMessage
+                    );
+
+            }
+
+            catch (
+                jsonError
+            ) {
+
+                invalidTelemetryPackets++;
+
+                console.error(
+                    "✗ Invalid MQTT JSON:"
                 );
+
+                console.error(
+                    jsonError.message
+                );
+
+                console.error(
+                    rawMessage
+                );
+
+                return;
+
+            }
+
+
+            // ==================================================
+            // GENERATE SERVER TELEMETRY ID
+            // ==================================================
+
+            telemetrySequence++;
+
+
+            const telemetryId =
+                telemetrySequence;
+
+
+            // ==================================================
+            // SERVER TIMESTAMP
+            // ==================================================
+
+            const serverTimestamp =
+                Date.now();
+
+
+            // ==================================================
+            // CREATE ONE ENRICHED PACKET
+            // ==================================================
+            //
+            // IMPORTANT:
+            //
+            // We create this object ONCE.
+            //
+            // The exact same object is sent to:
+            //
+            // Team
+            // Driver
+            //
+            // The same ID and timestamp are written to:
+            //
+            // InfluxDB
+            //
+            // ==================================================
+
+            const telemetry = {
+
+                ...data,
+
+                telemetry_id:
+                    telemetryId,
+
+                server_timestamp:
+                    serverTimestamp
+
+            };
+
+
+            // ==================================================
+            // UPDATE SERVER STATE
+            // ==================================================
+
+            lastTelemetry =
+                telemetry;
+
+            lastTelemetryTime =
+                serverTimestamp;
+
+            totalTelemetryPackets++;
+
+
+            // ==================================================
+            // CONSOLE HEADER
+            // ==================================================
 
             console.log("");
 
@@ -673,309 +1146,447 @@ mqttClient.on(
                 "========== MQTT TELEMETRY =========="
             );
 
-            console.dir(
-                data,
-                {
-                    depth: null,
-                    colors: true
-                }
+            console.log(
+                `MQTT Topic: ${topic}`
             );
 
+            console.log(
+                `Telemetry ID: ${telemetryId}`
+            );
+
+            console.log(
+                `Server Time: ${
+                    new Date(
+                        serverTimestamp
+                    ).toISOString()
+                }`
+            );
+
+
             // ==================================================
-            // SEND TELEMETRY TO ALL DASHBOARDS
+            // PRINT IMPORTANT VALUES
+            // ==================================================
+
+            console.log(
+                `Speed: ${
+                    telemetry.speed_kmh
+                } km/h`
+            );
+
+            console.log(
+                `Throttle: ${
+                    telemetry.throttle
+               } %`
+            );
+
+            console.log(
+                `Motor Power: ${
+                    telemetry.m_power
+                } W`
+            );
+
+            console.log(
+                `Fuel Cell Power: ${
+                    telemetry.fc?.power
+                } W`
+            );
+
+            console.log(
+                `Slope: ${
+                    telemetry.slope
+                } deg`
+            );
+
+
+            // ==================================================
+            // SEND EXACT SAME PACKET
+            // ==================================================
+            //
+            // BOTH dashboards receive this exact object.
+            //
             // ==================================================
 
             io.emit(
                 "telemetry",
-                data
+                telemetry
+            );
+
+
+            console.log(
+                `✓ Telemetry ${telemetryId} sent to Team`
             );
 
             console.log(
-                "✓ Telemetry sent to dashboard"
+                `✓ Telemetry ${telemetryId} sent to Driver`
             );
 
-            // ==================================================
-            // CREATE INFLUXDB POINT
-            // ==================================================
-
-            const point =
-                new Point(
-                    "telemetry"
-                );
 
             // ==================================================
-            // VEHICLE TAG
+            // INFLUXDB
             // ==================================================
 
             if (
-                data.vehicle !== undefined &&
-                data.vehicle !== null
+                writeApi
             ) {
 
-                point.tag(
-                    "vehicle",
-                    String(data.vehicle)
-                );
-
-            }
-
-            // ==================================================
-            // VEHICLE DATA
-            // ==================================================
-
-            addFloatField(
-                point,
-                "throttle",
-                data.throttle
-            );
-
-            addFloatField(
-                point,
-                "accel",
-                data.accel
-            );
-
-            addFloatField(
-                point,
-                "decel",
-                data.decel
-            );
-
-            addFloatField(
-                point,
-                "slope",
-                data.slope
-            );
-
-            addFloatField(
-                point,
-                "ds18b20_temp",
-                data.ds18b20_temp
-            );
-
-            addFloatField(
-                point,
-                "bus_voltage",
-                data.bus_voltage
-            );
-
-            addFloatField(
-                point,
-                "motor_current",
-                data.motor_current
-            );
-
-            addFloatField(
-                point,
-                "m_rpm",
-                data.m_rpm
-            );
-
-            addFloatField(
-                point,
-                "m_power",
-                data.m_power
-            );
-
-            addFloatField(
-                point,
-                "speed_kmh",
-                data.speed_kmh
-            );
-
-            addFloatField(
-                point,
-                "distance_m",
-                data.distance_m
-            );
-
-            // ==================================================
-            // FUEL CELL
-            // ==================================================
-
-            if (
-                data.fc !== undefined &&
-                data.fc !== null
-            ) {
-
-                addFloatField(
-                    point,
-                    "fc_voltage",
-                    data.fc.voltage
-                );
-
-                addFloatField(
-                    point,
-                    "fc_current",
-                    data.fc.current
-                );
-
-                addFloatField(
-                    point,
-                    "fc_power",
-                    data.fc.power
-                );
-
-                addFloatField(
-                    point,
-                    "fc_stack_temp",
-                    data.fc.stack_temp
-                );
-
-                addFloatField(
-                    point,
-                    "fc_h2_leak_volts",
-                    data.fc.h2_leak_volts
-                );
-
-                addFloatField(
-                    point,
-                    "fc_env_temp",
-                    data.fc.env_temp
-                );
-
-                addFloatField(
-                    point,
-                    "fc_batt_voltage",
-                    data.fc.batt_voltage
-                );
-
-                addFloatField(
-                    point,
-                    "fc_batt_current",
-                    data.fc.batt_current
-                );
-
-                // ------------------------------------------------
-                // ERROR FLAG
-                // ------------------------------------------------
-
-                const fcError =
-                    numberOrNull(
-                        data.fc.error_flag
+                const point =
+                    new Point(
+                        "telemetry"
                     );
 
+
+                // =================================================
+                // SYNCHRONIZATION FIELDS
+                // =================================================
+
+                point.intField(
+                    "telemetry_id",
+                    telemetryId
+                );
+
+
+                point.intField(
+                    "server_timestamp",
+                    serverTimestamp
+                );
+
+
+                // =================================================
+                // VEHICLE TAG
+                // =================================================
+
                 if (
-                    fcError !== null
+                    telemetry.vehicle !== undefined &&
+                    telemetry.vehicle !== null
                 ) {
 
-                    point.intField(
+                    point.tag(
+                        "vehicle",
+                        String(
+                            telemetry.vehicle
+                        )
+                    );
+
+                }
+
+
+                // =================================================
+                // VEHICLE DATA
+                // =================================================
+
+                addFloatField(
+                    point,
+                    "throttle",
+                    telemetry.throttle
+                );
+
+
+                addFloatField(
+                    point,
+                    "accel",
+                    telemetry.accel
+                );
+
+
+                addFloatField(
+                    point,
+                    "decel",
+                    telemetry.decel
+                );
+
+
+                addFloatField(
+                    point,
+                    "slope",
+                    telemetry.slope
+                );
+
+
+                addFloatField(
+                    point,
+                    "ds18b20_temp",
+                    telemetry.ds18b20_temp
+                );
+
+
+                addFloatField(
+                    point,
+                    "bus_voltage",
+                    telemetry.bus_voltage
+                );
+
+
+                addFloatField(
+                    point,
+                    "motor_current",
+                    telemetry.motor_current
+                );
+
+
+                addFloatField(
+                    point,
+                    "m_rpm",
+                    telemetry.m_rpm
+                );
+
+
+                addFloatField(
+                    point,
+                    "m_power",
+                    telemetry.m_power
+                );
+
+
+                addFloatField(
+                    point,
+                    "speed_kmh",
+                    telemetry.speed_kmh
+                );
+
+
+                addFloatField(
+                    point,
+                    "distance_m",
+                    telemetry.distance_m
+                );
+
+
+                // =================================================
+                // FUEL CELL
+                // =================================================
+
+                if (
+                    telemetry.fc !== undefined &&
+                    telemetry.fc !== null
+                ) {
+
+                    addFloatField(
+                        point,
+                        "fc_voltage",
+                        telemetry.fc.voltage
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_current",
+                        telemetry.fc.current
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_power",
+                        telemetry.fc.power
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_stack_temp",
+                        telemetry.fc.stack_temp
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_h2_leak_volts",
+                        telemetry.fc.h2_leak_volts
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_env_temp",
+                        telemetry.fc.env_temp
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_batt_voltage",
+                        telemetry.fc.batt_voltage
+                    );
+
+
+                    addFloatField(
+                        point,
+                        "fc_batt_current",
+                        telemetry.fc.batt_current
+                    );
+
+
+                    addIntegerField(
+                        point,
                         "fc_error_flag",
-                        Math.trunc(fcError)
+                        telemetry.fc.error_flag
                     );
 
                 }
 
-            }
 
-            // ==================================================
-            // GPS
-            // ==================================================
-
-            if (
-                data.gps !== undefined &&
-                data.gps !== null
-            ) {
-
-                const lat =
-                    numberOrNull(
-                        data.gps.lat
-                    );
-
-                const lon =
-                    numberOrNull(
-                        data.gps.lon
-                    );
-
-                const alt =
-                    numberOrNull(
-                        data.gps.alt
-                    );
-
-                // ------------------------------------------------
-                // InfluxDB GPS
-                // ------------------------------------------------
+                // =================================================
+                // GPS
+                // =================================================
 
                 if (
-                    lat !== null
+                    telemetry.gps !== undefined &&
+                    telemetry.gps !== null
                 ) {
 
-                    point.floatField(
-                        "gps_lat",
-                        lat
-                    );
+                    const lat =
+                        numberOrNull(
+                            telemetry.gps.lat
+                        );
 
-                }
 
-                if (
-                    lon !== null
-                ) {
+                    const lon =
+                        numberOrNull(
+                            telemetry.gps.lon
+                        );
 
-                    point.floatField(
-                        "gps_lon",
-                        lon
-                    );
 
-                }
+                    const alt =
+                        numberOrNull(
+                            telemetry.gps.alt
+                        );
 
-                if (
-                    alt !== null
-                ) {
 
-                    point.floatField(
-                        "gps_alt",
+                    // ---------------------------------------------
+                    // InfluxDB GPS
+                    // ---------------------------------------------
+
+                    if (
+                        lat !== null
+                    ) {
+
+                        point.floatField(
+                            "gps_lat",
+                            lat
+                        );
+
+                    }
+
+
+                    if (
+                        lon !== null
+                    ) {
+
+                        point.floatField(
+                            "gps_lon",
+                            lon
+                        );
+
+                    }
+
+
+                    if (
+                        alt !== null
+                    ) {
+
+                        point.floatField(
+                            "gps_alt",
+                            alt
+                        );
+
+                    }
+
+
+                    // ---------------------------------------------
+                    // Shared route
+                    // ---------------------------------------------
+
+                    addRoutePoint(
+                        lat,
+                        lon,
                         alt
                     );
 
                 }
 
-                // ------------------------------------------------
-                // Shared route
-                // ------------------------------------------------
 
-                addRoutePoint(
-                    lat,
-                    lon,
-                    alt
+                // =================================================
+                // CONNECTION STATUS
+                // =================================================
+
+                if (
+                    telemetry.connected !== undefined
+                ) {
+
+                    point.intField(
+                        "connected",
+                        telemetry.connected
+                            ? 1
+                            : 0
+                    );
+
+                }
+
+
+                // =================================================
+                // WRITE
+                // =================================================
+
+                writeApi.writePoint(
+                    point
+                );
+
+
+                console.log(
+                    `✓ Telemetry ${telemetryId} queued for InfluxDB`
                 );
 
             }
 
-            // ==================================================
-            // CONNECTION STATUS
-            // ==================================================
+            else {
 
-            if (
-                data.connected !== undefined
-            ) {
-
-                point.intField(
-                    "connected",
-                    data.connected ? 1 : 0
+                console.error(
+                    `✗ Telemetry ${telemetryId} NOT written: InfluxDB unavailable`
                 );
 
             }
 
+
             // ==================================================
-            // WRITE TO INFLUXDB
+            // FINAL SYNC LOG
             // ==================================================
 
-            writeApi.writePoint(
-                point
+            console.log("");
+
+            console.log(
+                "SYNC VERIFICATION"
             );
 
             console.log(
-                "✓ Telemetry queued for InfluxDB"
+                `Packet ID : ${telemetryId}`
+            );
+
+            console.log(
+                `Team      : ${telemetryId}`
+            );
+
+            console.log(
+                `Driver    : ${telemetryId}`
+            );
+
+            console.log(
+                `InfluxDB  : ${telemetryId}`
+            );
+
+            console.log(
+                "===================================="
             );
 
         }
 
-        catch (error) {
+        catch (
+            error
+        ) {
 
             console.error("");
 
             console.error(
-                "✗ MQTT / JSON / InfluxDB Error"
+                "✗ MQTT / TELEMETRY ERROR"
             );
 
             console.error(
@@ -989,6 +1600,9 @@ mqttClient.on(
     }
 
 );
+
+}
+
 
 // ============================================================
 // SOCKET.IO CONNECTION
@@ -1004,8 +1618,9 @@ io.on(
             `✓ Dashboard connected: ${socket.id}`
         );
 
+
         // ====================================================
-        // SEND COMPLETE EXISTING ROUTE
+        // SEND EXISTING ROUTE
         // ====================================================
 
         socket.emit(
@@ -1013,9 +1628,43 @@ io.on(
             routeHistory
         );
 
+
         console.log(
-            `✓ Sent ${routeHistory.length} GPS points to dashboard`
+            `✓ Sent ${
+                routeHistory.length
+            } GPS points to ${socket.id}`
         );
+
+
+        // ====================================================
+        // SEND LATEST TELEMETRY
+        // ====================================================
+        //
+        // This is important.
+        //
+        // If a dashboard connects after telemetry has already
+        // arrived, it immediately receives the latest packet.
+        //
+        // ====================================================
+
+        if (
+            lastTelemetry
+        ) {
+
+            socket.emit(
+                "telemetry",
+                lastTelemetry
+            );
+
+
+            console.log(
+                `✓ Sent latest telemetry ${
+                    lastTelemetry.telemetry_id
+                } to ${socket.id}`
+            );
+
+        }
+
 
         // ====================================================
         // REQUEST ROUTE HISTORY
@@ -1036,6 +1685,7 @@ io.on(
 
         );
 
+
         // ====================================================
         // DISCONNECT
         // ====================================================
@@ -1047,7 +1697,9 @@ io.on(
             (reason) => {
 
                 console.log(
-                    `✗ Dashboard disconnected: ${socket.id} (${reason})`
+                    `✗ Dashboard disconnected: ${
+                        socket.id
+                    } (${reason})`
                 );
 
             }
@@ -1058,11 +1710,13 @@ io.on(
 
 );
 
+
 // ============================================================
 // GRACEFUL SHUTDOWN
 // ============================================================
 
 let shuttingDown = false;
+
 
 async function shutdown() {
 
@@ -1074,28 +1728,28 @@ async function shutdown() {
 
     }
 
-    shuttingDown = true;
+
+    shuttingDown =
+        true;
+
 
     console.log("");
+
+    console.log(
+        "================================================"
+    );
 
     console.log(
         "Shutting down telemetry server..."
     );
 
-    // ========================================================
-    // STOP ACCEPTING NEW CONNECTIONS
-    // ========================================================
-
-    server.close(
-        () => {
-            console.log(
-                "✓ HTTP server closed"
-            );
-        }
+    console.log(
+        "================================================"
     );
 
+
     // ========================================================
-    // MQTT
+    // STOP HTTP SERVER
     // ========================================================
 
     try {
@@ -1103,23 +1757,11 @@ async function shutdown() {
         await new Promise(
             (resolve) => {
 
-                if (
-                    !mqttClient.connected
-                ) {
-
-                    resolve();
-
-                    return;
-
-                }
-
-                mqttClient.end(
-                    false,
-                    {},
+                server.close(
                     () => {
 
                         console.log(
-                            "✓ MQTT connection closed"
+                            "✓ HTTP server closed"
                         );
 
                         resolve();
@@ -1132,7 +1774,70 @@ async function shutdown() {
 
     }
 
-    catch (error) {
+    catch (
+        error
+    ) {
+
+        console.error(
+            "HTTP shutdown error:",
+            error.message
+        );
+
+    }
+
+
+    // ========================================================
+    // MQTT
+    // ========================================================
+
+    try {
+
+        if (
+            mqttClient
+        ) {
+
+            await new Promise(
+                (resolve) => {
+
+                    if (
+                        !mqttClient.connected
+                    ) {
+
+                        resolve();
+
+                        return;
+
+                    }
+
+
+                    mqttClient.end(
+
+                        false,
+
+                        {},
+
+                        () => {
+
+                            console.log(
+                                "✓ MQTT connection closed"
+                            );
+
+                            resolve();
+
+                        }
+
+                    );
+
+                }
+            );
+
+        }
+
+    }
+
+    catch (
+        error
+    ) {
 
         console.error(
             "MQTT shutdown error:",
@@ -1141,21 +1846,30 @@ async function shutdown() {
 
     }
 
+
     // ========================================================
     // INFLUXDB
     // ========================================================
 
     try {
 
-        await writeApi.close();
+        if (
+            writeApi
+        ) {
 
-        console.log(
-            "✓ InfluxDB connection closed"
-        );
+            await writeApi.close();
+
+            console.log(
+                "✓ InfluxDB data flushed and connection closed"
+            );
+
+        }
 
     }
 
-    catch (error) {
+    catch (
+        error
+    ) {
 
         console.error(
             "InfluxDB shutdown error:",
@@ -1164,13 +1878,18 @@ async function shutdown() {
 
     }
 
+
     console.log(
         "✓ Telemetry server shutdown complete"
     );
 
-    process.exit(0);
+
+    process.exit(
+        0
+    );
 
 }
+
 
 // ============================================================
 // PROCESS SIGNALS
@@ -1186,12 +1905,15 @@ process.on(
     shutdown
 );
 
+
 // ============================================================
-// UNHANDLED ERRORS
+// UNCAUGHT EXCEPTION
 // ============================================================
 
 process.on(
+
     "uncaughtException",
+
     (error) => {
 
         console.error(
@@ -1200,10 +1922,18 @@ process.on(
         );
 
     }
+
 );
 
+
+// ============================================================
+// UNHANDLED REJECTION
+// ============================================================
+
 process.on(
+
     "unhandledRejection",
+
     (error) => {
 
         console.error(
@@ -1212,4 +1942,5 @@ process.on(
         );
 
     }
+
 );
