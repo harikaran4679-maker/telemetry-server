@@ -12,9 +12,9 @@
 
 <title>Team ReNew Telemetry</title>
 
-<!-- ===================================================== -->
-<!-- LEAFLET -->
-<!-- ===================================================== -->
+<!-- =====================================================
+     LEAFLET
+===================================================== -->
 
 <link
     rel="stylesheet"
@@ -25,17 +25,18 @@
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 </script>
 
-<!-- ===================================================== -->
-<!-- SOCKET.IO -->
-<!-- ===================================================== -->
+<!-- =====================================================
+     SOCKET.IO
+===================================================== -->
 
 <script src="/socket.io/socket.io.js"></script>
+
 
 <style>
 
 /* =========================================================
    GLOBAL
-   ========================================================= */
+========================================================= */
 
 * {
     box-sizing: border-box;
@@ -45,6 +46,7 @@ html,
 body {
 
     margin: 0;
+    padding: 0;
 
     width: 100%;
 
@@ -65,17 +67,29 @@ body {
 
     padding: 10px;
 
+    overflow-x: hidden;
+
 }
 
+
 /* =========================================================
-   MAIN GRID
-   ========================================================= */
+   MAIN DASHBOARD
+
+   DESKTOP LAYOUT
+
+   ROW 1 = HEADER
+   ROW 2 = THROTTLE
+   ROW 3 = MAIN METRICS
+   ROW 4 = SMALL METRICS
+   ROW 5 = INFORMATION
+
+   MAP stays in column 2 and does NOT control
+   the height of the left side.
+========================================================= */
 
 .dashboard {
 
     width: 100%;
-
-    min-height: calc(100vh - 20px);
 
     display: grid;
 
@@ -84,32 +98,22 @@ body {
         minmax(420px, 1fr);
 
     grid-template-rows:
-        auto
-        auto
-        auto
-        minmax(500px, 1fr);
+        72px
+        52px
+        120px
+        52px
+        400px;
 
     gap: 8px;
 
+    align-items: start;
+
 }
+
 
 /* =========================================================
-   HEADER
-   ========================================================= */
-
-.header {
-
-    grid-column: 1;
-
-    height: 72px;
-
-    display: grid;
-
-    grid-template-columns: 160px 1fr 160px;
-
-    gap: 8px;
-
-}
+   COMMON BOX
+========================================================= */
 
 .logo-box,
 .title-box,
@@ -128,9 +132,34 @@ body {
 
 }
 
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+
+    grid-column: 1;
+
+    grid-row: 1;
+
+    height: 72px;
+
+    display: grid;
+
+    grid-template-columns:
+        160px
+        1fr
+        160px;
+
+    gap: 8px;
+
+}
+
+
 /* =========================================================
    LOGO
-   ========================================================= */
+========================================================= */
 
 .logo-box {
 
@@ -152,9 +181,10 @@ body {
 
 }
 
+
 /* =========================================================
    TITLE
-   ========================================================= */
+========================================================= */
 
 .title-box {
 
@@ -188,9 +218,10 @@ body {
 
 }
 
+
 /* =========================================================
    STATUS
-   ========================================================= */
+========================================================= */
 
 .status-box {
 
@@ -236,9 +267,10 @@ body {
 
 }
 
+
 /* =========================================================
    SLOPE
-   ========================================================= */
+========================================================= */
 
 .slope-box {
 
@@ -278,19 +310,27 @@ body {
 
 }
 
+
 /* =========================================================
    THROTTLE
-   ========================================================= */
+========================================================= */
 
 .throttle-box {
 
     grid-column: 1;
 
-    padding: 12px;
+    grid-row: 2;
+
+    height: 52px;
+
+    padding: 10px 12px;
 
     display: grid;
 
-    grid-template-columns: 100px 1fr 70px;
+    grid-template-columns:
+        100px
+        1fr
+        70px;
 
     align-items: center;
 
@@ -341,13 +381,16 @@ body {
 
 }
 
+
 /* =========================================================
-   TOP METRIC CARDS
-   ========================================================= */
+   MAIN METRIC CARDS
+========================================================= */
 
 .metrics {
 
     grid-column: 1;
+
+    grid-row: 3;
 
     display: grid;
 
@@ -356,11 +399,13 @@ body {
 
     gap: 8px;
 
+    height: 120px;
+
 }
 
 .card {
 
-    min-height: 120px;
+    height: 120px;
 
     border-top:
         3px solid
@@ -426,13 +471,16 @@ body {
 
 }
 
+
 /* =========================================================
    SMALL METRICS
-   ========================================================= */
+========================================================= */
 
 .small-metrics {
 
     grid-column: 1;
+
+    grid-row: 4;
 
     display: grid;
 
@@ -440,6 +488,8 @@ body {
         repeat(3, 1fr);
 
     gap: 8px;
+
+    height: 52px;
 
 }
 
@@ -479,13 +529,16 @@ body {
 
 }
 
+
 /* =========================================================
    INFORMATION AREA
-   ========================================================= */
+========================================================= */
 
 .information {
 
     grid-column: 1;
+
+    grid-row: 5;
 
     display: grid;
 
@@ -494,19 +547,38 @@ body {
 
     gap: 8px;
 
+    width: 100%;
+
+    height: 400px;
+
     min-height: 400px;
+
+    align-items: start;
 
 }
 
 .info-card {
 
+    width: 100%;
+
+    height: 400px;
+
     min-height: 400px;
 
+    overflow: hidden;
+
 }
+
+
+/* =========================================================
+   INFORMATION TITLE
+========================================================= */
 
 .info-title {
 
     height: 44px;
+
+    min-height: 44px;
 
     border-bottom:
         1px solid
@@ -528,6 +600,11 @@ body {
 
 }
 
+
+/* =========================================================
+   INFORMATION CONTENT
+========================================================= */
+
 .info-content {
 
     padding: 12px;
@@ -540,7 +617,9 @@ body {
 
     justify-content: space-between;
 
-    padding: 10px 0;
+    align-items: center;
+
+    padding: 9px 0;
 
     border-bottom:
         1px solid
@@ -562,6 +641,11 @@ body {
 
 }
 
+
+/* =========================================================
+   WARNING
+========================================================= */
+
 .warning {
 
     height: 330px;
@@ -582,27 +666,59 @@ body {
 
 }
 
+
 /* =========================================================
-   MAP
-   ========================================================= */
+   MAP PANEL
+
+   IMPORTANT:
+
+   The map is placed only in GRID ROW 2.
+
+   It has a fixed height.
+
+   It does NOT use:
+       grid-row: span
+       min-height: 700px
+       height: 100%
+
+   Therefore it cannot create the huge black
+   area on the left.
+========================================================= */
 
 .map-panel {
 
     grid-column: 2;
 
-    grid-row: 2 / span 3;
+    grid-row: 2;
 
-    min-height: 600px;
+    width: 100%;
+
+    height: 610px;
+
+    min-height: 610px;
+
+    max-height: 610px;
 
     display: flex;
 
     flex-direction: column;
 
+    overflow: hidden;
+
+    align-self: start;
+
 }
+
+
+/* =========================================================
+   MAP HEADER
+========================================================= */
 
 .map-header {
 
     height: 48px;
+
+    min-height: 48px;
 
     display: flex;
 
@@ -619,6 +735,11 @@ body {
     letter-spacing: 2px;
 
 }
+
+
+/* =========================================================
+   CLEAR BUTTON
+========================================================= */
 
 .clear-button {
 
@@ -647,21 +768,31 @@ body {
 
 }
 
+
+/* =========================================================
+   LEAFLET MAP
+========================================================= */
+
 #teamMap {
 
     flex: 1;
 
-    min-height: 500px;
+    min-height: 0;
+
+    width: 100%;
 
 }
 
+
 /* =========================================================
    GPS FOOTER
-   ========================================================= */
+========================================================= */
 
 .gps-footer {
 
     height: 45px;
+
+    min-height: 45px;
 
     display: grid;
 
@@ -700,27 +831,99 @@ body {
 
 }
 
+
 /* =========================================================
-   RESPONSIVE
-   ========================================================= */
+   LEAFLET
+========================================================= */
+
+.leaflet-container {
+
+    background: #111;
+
+}
+
+
+/* =========================================================
+   IMPORTANT:
+
+   NO DESKTOP .map-panel min-height OVERRIDE HERE.
+
+   DO NOT ADD:
+
+       min-height: 700px;
+
+   This was causing the black gap.
+========================================================= */
+
+
+/* =========================================================
+   MEDIUM SCREEN
+========================================================= */
+
+@media (max-width: 1300px) and (min-width: 1101px) {
+
+    .dashboard {
+
+        grid-template-columns:
+            minmax(0, 1.8fr)
+            minmax(380px, 1fr);
+
+    }
+
+    .header {
+
+        grid-template-columns:
+            130px
+            1fr
+            140px;
+
+    }
+
+    .title-box {
+
+        font-size: 30px;
+
+        letter-spacing: 4px;
+
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE / TABLET
+========================================================= */
 
 @media (max-width: 1100px) {
 
+    body {
+
+        padding: 6px;
+
+    }
+
     .dashboard {
+
+        width: 100%;
+
+        display: grid;
 
         grid-template-columns: 1fr;
 
         grid-template-rows: auto;
 
+        gap: 8px;
+
     }
 
+
     .header,
+    .slope-box,
     .throttle-box,
     .metrics,
     .small-metrics,
     .information,
-    .map-panel,
-    .slope-box {
+    .map-panel {
 
         grid-column: 1;
 
@@ -728,7 +931,154 @@ body {
 
     }
 
+
+    .header {
+
+        height: 72px;
+
+    }
+
+
+    .slope-box {
+
+        height: 60px;
+
+    }
+
+
+    .throttle-box {
+
+        height: 52px;
+
+    }
+
+
+    .metrics {
+
+        height: auto;
+
+    }
+
+
+    .small-metrics {
+
+        height: auto;
+
+    }
+
+
+    .information {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+
+        height: auto;
+
+        min-height: 400px;
+
+    }
+
+
     .map-panel {
+
+        height: 600px;
+
+        min-height: 600px;
+
+        max-height: none;
+
+    }
+
+}
+
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 700px) {
+
+    .header {
+
+        grid-template-columns:
+            90px
+            1fr
+            110px;
+
+    }
+
+    .logo-box img {
+
+        max-width: 70px;
+
+    }
+
+    .title-box {
+
+        font-size: 22px;
+
+        letter-spacing: 2px;
+
+    }
+
+    .status-box {
+
+        font-size: 11px;
+
+    }
+
+    .slope-value {
+
+        font-size: 24px;
+
+    }
+
+
+    .metrics {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .card {
+
+        height: 120px;
+
+    }
+
+
+    .small-metrics {
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .small-card {
+
+        height: 52px;
+
+    }
+
+
+    .information {
+
+        grid-template-columns: 1fr;
+
+    }
+
+
+    .info-card {
+
+        height: 400px;
+
+        min-height: 400px;
+
+    }
+
+
+    .map-panel {
+
+        height: 500px;
 
         min-height: 500px;
 
@@ -740,473 +1090,690 @@ body {
 
 </head>
 
+
 <body>
+
 
 <div class="dashboard">
 
-    <!-- ================================================= -->
-    <!-- HEADER -->
-    <!-- ================================================= -->
 
-    <div class="header">
+<!-- =====================================================
+     HEADER
+===================================================== -->
 
-        <div class="logo-box">
+<div class="header">
 
-            <img
-                src="/team-renew-logo.png"
-                alt="Team ReNew"
-            >
 
-        </div>
+    <div class="logo-box">
 
-        <div class="title-box">
-
-            <span class="title-white">
-                TEAM
-            </span>
-
-            <span class="title-blue">
-                &nbsp;RENEW
-            </span>
-
-        </div>
-
-        <div
-            class="status-box"
-            id="statusBox"
+        <img
+            src="/team-renew-logo.png"
+            alt="Team ReNew"
         >
-
-            <span
-                class="status-dot"
-                id="statusDot"
-            ></span>
-
-            <span id="statusText">
-                CONNECTED
-            </span>
-
-        </div>
 
     </div>
 
-    <!-- ================================================= -->
-    <!-- SLOPE -->
-    <!-- ================================================= -->
 
-    <div class="slope-box">
+    <div class="title-box">
 
-        <div class="slope-label">
-            SLOPE (DEG)
+        <span class="title-white">
+            TEAM
+        </span>
+
+        <span class="title-blue">
+            &nbsp;RENEW
+        </span>
+
+    </div>
+
+
+    <div
+        class="status-box"
+        id="statusBox"
+    >
+
+        <span
+            class="status-dot"
+            id="statusDot"
+        ></span>
+
+        <span id="statusText">
+            CONNECTED
+        </span>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     SLOPE
+===================================================== -->
+
+<div class="slope-box">
+
+    <div class="slope-label">
+        SLOPE (DEG)
+    </div>
+
+    <div
+        class="slope-value"
+        id="slope"
+    >
+        --
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     THROTTLE
+===================================================== -->
+
+<div class="throttle-box">
+
+    <div class="throttle-label">
+        THROTTLE
+    </div>
+
+    <div class="throttle-track">
+
+        <div
+            class="throttle-fill"
+            id="throttleFill"
+        ></div>
+
+    </div>
+
+    <div
+        class="throttle-value"
+        id="throttle"
+    >
+        -- %
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     MAIN METRICS
+===================================================== -->
+
+<div class="metrics">
+
+
+    <div class="card">
+
+        <div class="card-label">
+            Fuel Cell Power
         </div>
 
         <div
-            class="slope-value"
-            id="slope"
+            class="card-value fc-value"
+            id="fcPower"
         >
             --
         </div>
 
-    </div>
-
-    <!-- ================================================= -->
-    <!-- THROTTLE -->
-    <!-- ================================================= -->
-
-    <div class="throttle-box">
-
-        <div class="throttle-label">
-            THROTTLE
+        <div class="unit">
+            W
         </div>
 
-        <div class="throttle-track">
+    </div>
 
-            <div
-                class="throttle-fill"
-                id="throttleFill"
-            ></div>
 
+    <div class="card">
+
+        <div class="card-label">
+            Speed
         </div>
 
         <div
-            class="throttle-value"
-            id="throttle"
+            class="card-value speed-value"
+            id="speed"
         >
-            -- %
+            --
+        </div>
+
+        <div class="unit">
+            km/h
         </div>
 
     </div>
 
-    <!-- ================================================= -->
-    <!-- MAIN METRICS -->
-    <!-- ================================================= -->
 
-    <div class="metrics">
+    <div class="card">
 
-        <div class="card">
-
-            <div class="card-label">
-                Fuel Cell Power
-            </div>
-
-            <div
-                class="card-value fc-value"
-                id="fcPower"
-            >
-                --
-            </div>
-
-            <div class="unit">
-                W
-            </div>
-
+        <div class="card-label">
+            Motor Power
         </div>
 
-        <div class="card">
-
-            <div class="card-label">
-                Speed
-            </div>
-
-            <div
-                class="card-value speed-value"
-                id="speed"
-            >
-                --
-            </div>
-
-            <div class="unit">
-                km/h
-            </div>
-
+        <div
+            class="card-value motor-value"
+            id="motorPower"
+        >
+            --
         </div>
 
-        <div class="card">
-
-            <div class="card-label">
-                Motor Power
-            </div>
-
-            <div
-                class="card-value motor-value"
-                id="motorPower"
-            >
-                --
-            </div>
-
-            <div class="unit">
-                W
-            </div>
-
+        <div class="unit">
+            W
         </div>
 
     </div>
 
-    <!-- ================================================= -->
-    <!-- SMALL METRICS -->
-    <!-- ================================================= -->
-
-    <div class="small-metrics">
-
-        <div class="small-card">
-
-            <span class="small-label">
-                ACCEL
-            </span>
-
-            <span
-                class="small-value"
-                id="accel"
-            >
-                --
-            </span>
-
-            <span class="unit">
-                m/s²
-            </span>
-
-        </div>
-
-        <div class="small-card">
-
-            <span class="small-label">
-                DISTANCE
-            </span>
-
-            <span
-                class="small-value"
-                id="distance"
-            >
-                --
-            </span>
-
-            <span class="unit">
-                m
-            </span>
-
-        </div>
-
-        <div class="small-card">
-
-            <span class="small-label">
-                DECELERATION
-            </span>
-
-            <span
-                class="small-value"
-                id="decel"
-            >
-                --
-            </span>
-
-            <span class="unit">
-                m/s²
-            </span>
-
-        </div>
-
-    </div>
-
-    <!-- ================================================= -->
-    <!-- INFORMATION -->
-    <!-- ================================================= -->
-
-    <div class="information">
-
-        <!-- MOTOR -->
-
-        <div class="info-card">
-
-            <div class="info-title">
-                MOTOR INFO
-            </div>
-
-            <div class="info-content">
-
-                <div class="row">
-                    <span>Vehicle</span>
-                    <span id="vehicle">--</span>
-                </div>
-
-                <div class="row">
-                    <span>Bus Voltage</span>
-                    <span>
-                        <span id="busVoltage">--</span>
-                        V
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Motor Current</span>
-                    <span>
-                        <span id="motorCurrent">--</span>
-                        A
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Motor RPM</span>
-                    <span id="motorRPM">--</span>
-                </div>
-
-                <div class="row">
-                    <span>Motor Temperature</span>
-                    <span>
-                        <span id="motorTemp">--</span>
-                        °C
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Throttle</span>
-                    <span>
-                        <span id="motorThrottle">--</span>
-                        %
-                    </span>
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- WARNING -->
-
-        <div class="info-card">
-
-            <div class="info-title">
-                WARNING / INSTRUCTION
-            </div>
-
-            <div
-                class="warning"
-                id="warning"
-            >
-                SYSTEM NORMAL
-            </div>
-
-        </div>
-
-        <!-- FUEL CELL -->
-
-        <div class="info-card">
-
-            <div class="info-title">
-                FUEL CELL INFO
-            </div>
-
-            <div class="info-content">
-
-                <div class="row">
-                    <span>Voltage</span>
-                    <span>
-                        <span id="fcVoltage">--</span>
-                        V
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Current</span>
-                    <span>
-                        <span id="fcCurrent">--</span>
-                        A
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Power</span>
-                    <span>
-                        <span id="fcPowerInfo">--</span>
-                        W
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Stack Temp</span>
-                    <span>
-                        <span id="stackTemp">--</span>
-                        °C
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>H₂ Leak</span>
-                    <span>
-                        <span id="h2Leak">--</span>
-                        V
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Environment</span>
-                    <span>
-                        <span id="envTemp">--</span>
-                        °C
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Battery Voltage</span>
-                    <span>
-                        <span id="batteryVoltage">--</span>
-                        V
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Battery Current</span>
-                    <span>
-                        <span id="batteryCurrent">--</span>
-                        A
-                    </span>
-                </div>
-
-                <div class="row">
-                    <span>Error Flag</span>
-                    <span id="errorFlag">
-                        --
-                    </span>
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <!-- ================================================= -->
-    <!-- MAP -->
-    <!-- ================================================= -->
-
-    <div class="map-panel">
-
-        <div class="map-header">
-
-            <span>
-                LIVE MAP
-            </span>
-
-            <button
-                class="clear-button"
-                id="clearRoute"
-            >
-                CLEAR
-            </button>
-
-        </div>
-
-        <div id="teamMap"></div>
-
-        <div class="gps-footer">
-
-            <div class="gps-cell">
-                LAT
-                <span id="latitude">--</span>
-            </div>
-
-            <div class="gps-cell">
-                LONG
-                <span id="longitude">--</span>
-            </div>
-
-            <div class="gps-cell">
-                ALT
-                <span id="altitude">--</span>
-            </div>
-
-        </div>
-
-    </div>
 
 </div>
+
+
+<!-- =====================================================
+     SMALL METRICS
+===================================================== -->
+
+<div class="small-metrics">
+
+
+    <div class="small-card">
+
+        <span class="small-label">
+            ACCEL
+        </span>
+
+        <span
+            class="small-value"
+            id="accel"
+        >
+            --
+        </span>
+
+        <span class="unit">
+            m/s²
+        </span>
+
+    </div>
+
+
+    <div class="small-card">
+
+        <span class="small-label">
+            DISTANCE
+        </span>
+
+        <span
+            class="small-value"
+            id="distance"
+        >
+            --
+        </span>
+
+        <span class="unit">
+            m
+        </span>
+
+    </div>
+
+
+    <div class="small-card">
+
+        <span class="small-label">
+            DECELERATION
+        </span>
+
+        <span
+            class="small-value"
+            id="decel"
+        >
+            --
+        </span>
+
+        <span class="unit">
+            m/s²
+        </span>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     INFORMATION
+===================================================== -->
+
+<div class="information">
+
+
+    <!-- MOTOR INFO -->
+
+    <div class="info-card">
+
+        <div class="info-title">
+            MOTOR INFO
+        </div>
+
+        <div class="info-content">
+
+
+            <div class="row">
+
+                <span>
+                    Vehicle
+                </span>
+
+                <span id="vehicle">
+                    --
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Bus Voltage
+                </span>
+
+                <span>
+
+                    <span id="busVoltage">
+                        --
+                    </span>
+
+                    V
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Motor Current
+                </span>
+
+                <span>
+
+                    <span id="motorCurrent">
+                        --
+                    </span>
+
+                    A
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Motor RPM
+                </span>
+
+                <span id="motorRPM">
+                    --
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Motor Temperature
+                </span>
+
+                <span>
+
+                    <span id="motorTemp">
+                        --
+                    </span>
+
+                    °C
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Throttle
+                </span>
+
+                <span>
+
+                    <span id="motorThrottle">
+                        --
+                    </span>
+
+                    %
+
+                </span>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- WARNING -->
+
+    <div class="info-card">
+
+        <div class="info-title">
+            WARNING / INSTRUCTION
+        </div>
+
+        <div
+            class="warning"
+            id="warning"
+        >
+            SYSTEM NORMAL
+        </div>
+
+    </div>
+
+
+    <!-- FUEL CELL INFO -->
+
+    <div class="info-card">
+
+        <div class="info-title">
+            FUEL CELL INFO
+        </div>
+
+        <div class="info-content">
+
+
+            <div class="row">
+
+                <span>
+                    Voltage
+                </span>
+
+                <span>
+
+                    <span id="fcVoltage">
+                        --
+                    </span>
+
+                    V
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Current
+                </span>
+
+                <span>
+
+                    <span id="fcCurrent">
+                        --
+                    </span>
+
+                    A
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Power
+                </span>
+
+                <span>
+
+                    <span id="fcPowerInfo">
+                        --
+                    </span>
+
+                    W
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Stack Temp
+                </span>
+
+                <span>
+
+                    <span id="stackTemp">
+                        --
+                    </span>
+
+                    °C
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    H₂ Leak
+                </span>
+
+                <span>
+
+                    <span id="h2Leak">
+                        --
+                    </span>
+
+                    V
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Environment
+                </span>
+
+                <span>
+
+                    <span id="envTemp">
+                        --
+                    </span>
+
+                    °C
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Battery Voltage
+                </span>
+
+                <span>
+
+                    <span id="batteryVoltage">
+                        --
+                    </span>
+
+                    V
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Battery Current
+                </span>
+
+                <span>
+
+                    <span id="batteryCurrent">
+                        --
+                    </span>
+
+                    A
+
+                </span>
+
+            </div>
+
+
+            <div class="row">
+
+                <span>
+                    Error Flag
+                </span>
+
+                <span id="errorFlag">
+                    --
+                </span>
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- =====================================================
+     MAP
+===================================================== -->
+
+<div class="map-panel">
+
+
+    <div class="map-header">
+
+        <span>
+            LIVE MAP
+        </span>
+
+
+        <button
+            class="clear-button"
+            id="clearRoute"
+        >
+            CLEAR
+        </button>
+
+    </div>
+
+
+    <div id="teamMap"></div>
+
+
+    <div class="gps-footer">
+
+
+        <div class="gps-cell">
+
+            LAT
+
+            <span id="latitude">
+                --
+            </span>
+
+        </div>
+
+
+        <div class="gps-cell">
+
+            LONG
+
+            <span id="longitude">
+                --
+            </span>
+
+        </div>
+
+
+        <div class="gps-cell">
+
+            ALT
+
+            <span id="altitude">
+                --
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+</div>
+
+
+</div>
+
 
 <script>
 
 /* =========================================================
    SOCKET
-   ========================================================= */
+========================================================= */
 
 const socket = io();
 
+
 /* =========================================================
-   HELPERS
-   ========================================================= */
+   HELPER
+========================================================= */
 
-function valueOrDash(value, digits = 2) {
+function valueOrDash(
+    value,
+    digits = 2
+) {
 
-    const n = Number(value);
+    const n =
+        Number(value);
 
-    if (!Number.isFinite(n)) {
+    if (
+        !Number.isFinite(n)
+    ) {
 
         return "--";
 
     }
 
-    return n.toFixed(digits);
+    return n.toFixed(
+        digits
+    );
 
 }
 
+
 /* =========================================================
    STATUS
-   ========================================================= */
+========================================================= */
 
 const statusText =
     document.getElementById(
@@ -1217,6 +1784,7 @@ const statusDot =
     document.getElementById(
         "statusDot"
     );
+
 
 socket.on(
     "connect",
@@ -1232,6 +1800,7 @@ socket.on(
     }
 );
 
+
 socket.on(
     "disconnect",
     () => {
@@ -1246,9 +1815,10 @@ socket.on(
     }
 );
 
+
 /* =========================================================
    MAP
-   ========================================================= */
+========================================================= */
 
 const map =
     L.map(
@@ -1261,27 +1831,30 @@ const map =
         17
     );
 
+
 /* =========================================================
    TILE
-   ========================================================= */
+========================================================= */
 
 L.tileLayer(
 
     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
 
     {
+
         maxZoom: 20,
 
         attribution:
-            '&copy; OpenStreetMap contributors'
+            "&copy; OpenStreetMap contributors"
 
     }
 
 ).addTo(map);
 
+
 /* =========================================================
    ROUTE
-   ========================================================= */
+========================================================= */
 
 let routeLine =
     L.polyline(
@@ -1293,21 +1866,28 @@ let routeLine =
         }
     ).addTo(map);
 
+
 let routePoints = [];
 
 let vehicleMarker = null;
 
 let hasCenteredMap = false;
 
+
 /* =========================================================
    ADD ROUTE POINT
-   ========================================================= */
+========================================================= */
 
-function addRoutePoint(point) {
+function addRoutePoint(
+    point
+) {
 
     if (!point) {
+
         return;
+
     }
+
 
     const lat =
         Number(point.lat);
@@ -1315,25 +1895,31 @@ function addRoutePoint(point) {
     const lon =
         Number(point.lon);
 
+
     if (
         !Number.isFinite(lat) ||
         !Number.isFinite(lon)
     ) {
+
         return;
+
     }
+
 
     routePoints.push([
         lat,
         lon
     ]);
 
+
     routeLine.setLatLngs(
         routePoints
     );
 
+
     /* =====================================================
        VEHICLE MARKER
-       ===================================================== */
+    ===================================================== */
 
     if (!vehicleMarker) {
 
@@ -1352,9 +1938,10 @@ function addRoutePoint(point) {
 
     }
 
+
     /* =====================================================
-       CENTER ON FIRST GPS
-       ===================================================== */
+       CENTER FIRST GPS
+    ===================================================== */
 
     if (!hasCenteredMap) {
 
@@ -1369,9 +1956,10 @@ function addRoutePoint(point) {
 
 }
 
+
 /* =========================================================
    SHARED ROUTE HISTORY
-   ========================================================= */
+========================================================= */
 
 socket.on(
 
@@ -1379,15 +1967,37 @@ socket.on(
 
     (route) => {
 
+        if (!Array.isArray(route)) {
+
+            return;
+
+        }
+
         console.log(
             "Shared route received:",
             route.length,
             "points"
         );
 
+
         routePoints = [];
 
         routeLine.setLatLngs([]);
+
+
+        if (vehicleMarker) {
+
+            map.removeLayer(
+                vehicleMarker
+            );
+
+            vehicleMarker = null;
+
+        }
+
+
+        hasCenteredMap = false;
+
 
         for (
             const point of route
@@ -1403,9 +2013,10 @@ socket.on(
 
 );
 
+
 /* =========================================================
    LIVE ROUTE POINT
-   ========================================================= */
+========================================================= */
 
 socket.on(
 
@@ -1421,9 +2032,15 @@ socket.on(
 
 );
 
+
 /* =========================================================
    CLEAR ROUTE
-   ========================================================= */
+
+   IMPORTANT:
+   This clears only THIS TEAM DISPLAY.
+
+   It does not delete the server history.
+========================================================= */
 
 document
     .getElementById(
@@ -1441,17 +2058,30 @@ document
 
             hasCenteredMap = false;
 
+
+            if (vehicleMarker) {
+
+                map.removeLayer(
+                    vehicleMarker
+                );
+
+                vehicleMarker = null;
+
+            }
+
+
             console.log(
-                "Local route cleared"
+                "Local team route cleared"
             );
 
         }
 
     );
 
+
 /* =========================================================
    TELEMETRY
-   ========================================================= */
+========================================================= */
 
 socket.on(
 
@@ -1459,9 +2089,10 @@ socket.on(
 
     (data) => {
 
+
         /* ==================================================
            MAIN
-           ================================================== */
+        ================================================== */
 
         document
             .getElementById(
@@ -1471,12 +2102,17 @@ socket.on(
                 data.vehicle ??
                 "--";
 
+
         document
             .getElementById(
                 "throttle"
             )
             .textContent =
-                `${valueOrDash(data.throttle, 1)} %`;
+                `${valueOrDash(
+                    data.throttle,
+                    1
+                )} %`;
+
 
         document
             .getElementById(
@@ -1487,9 +2123,12 @@ socket.on(
                     0,
                     Math.min(
                         100,
-                        Number(data.throttle) || 0
+                        Number(
+                            data.throttle
+                        ) || 0
                     )
                 )}%`;
+
 
         document
             .getElementById(
@@ -1501,6 +2140,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "fcPower"
@@ -1510,6 +2150,7 @@ socket.on(
                     data.fc?.power,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1521,6 +2162,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "accel"
@@ -1530,6 +2172,7 @@ socket.on(
                     data.accel,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1541,6 +2184,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "distance"
@@ -1550,6 +2194,7 @@ socket.on(
                     data.distance_m,
                     1
                 );
+
 
         document
             .getElementById(
@@ -1561,9 +2206,10 @@ socket.on(
                     2
                 )}°`;
 
+
         /* ==================================================
            MOTOR
-           ================================================== */
+        ================================================== */
 
         document
             .getElementById(
@@ -1575,6 +2221,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "motorCurrent"
@@ -1584,6 +2231,7 @@ socket.on(
                     data.motor_current,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1595,6 +2243,7 @@ socket.on(
                     0
                 );
 
+
         document
             .getElementById(
                 "motorTemp"
@@ -1604,6 +2253,7 @@ socket.on(
                     data.ds18b20_temp,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1615,9 +2265,10 @@ socket.on(
                     1
                 );
 
+
         /* ==================================================
            FUEL CELL
-           ================================================== */
+        ================================================== */
 
         document
             .getElementById(
@@ -1629,6 +2280,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "fcCurrent"
@@ -1638,6 +2290,7 @@ socket.on(
                     data.fc?.current,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1649,6 +2302,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "stackTemp"
@@ -1658,6 +2312,7 @@ socket.on(
                     data.fc?.stack_temp,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1669,6 +2324,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "envTemp"
@@ -1678,6 +2334,7 @@ socket.on(
                     data.fc?.env_temp,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1689,6 +2346,7 @@ socket.on(
                     2
                 );
 
+
         document
             .getElementById(
                 "batteryCurrent"
@@ -1698,6 +2356,7 @@ socket.on(
                     data.fc?.batt_current,
                     2
                 );
+
 
         document
             .getElementById(
@@ -1709,19 +2368,22 @@ socket.on(
                     0
                 );
 
+
         /* ==================================================
            WARNING
-           ================================================== */
+        ================================================== */
 
         const error =
             Number(
                 data.fc?.error_flag
             );
 
+
         const warning =
             document.getElementById(
                 "warning"
             );
+
 
         if (
             Number.isFinite(error) &&
@@ -1745,9 +2407,10 @@ socket.on(
 
         }
 
+
         /* ==================================================
            GPS
-           ================================================== */
+        ================================================== */
 
         if (
             data.gps
@@ -1763,6 +2426,7 @@ socket.on(
                         6
                     );
 
+
             document
                 .getElementById(
                     "longitude"
@@ -1772,6 +2436,7 @@ socket.on(
                         data.gps.lon,
                         6
                     );
+
 
             document
                 .getElementById(
@@ -1789,7 +2454,52 @@ socket.on(
 
 );
 
+
+/* =========================================================
+   LEAFLET RESIZE
+========================================================= */
+
+window.addEventListener(
+
+    "resize",
+
+    () => {
+
+        setTimeout(
+
+            () => {
+
+                map.invalidateSize();
+
+            },
+
+            100
+
+        );
+
+    }
+
+);
+
+
+/* =========================================================
+   INITIAL MAP RESIZE
+========================================================= */
+
+setTimeout(
+
+    () => {
+
+        map.invalidateSize();
+
+    },
+
+    300
+
+);
+
 </script>
 
 </body>
+
 </html>
