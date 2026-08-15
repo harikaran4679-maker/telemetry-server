@@ -372,6 +372,7 @@ body {
 
 /* =========================================================
    RIGHT SIDE
+   MAP + SMALL SLOPE AT BOTTOM
 ========================================================= */
 
 .slope-panel {
@@ -384,77 +385,9 @@ body {
 
     flex-direction: column;
 
-    align-items: center;
+    align-items: stretch;
 
     justify-content: flex-start;
-
-}
-
-
-/* =========================================================
-   SLOPE
-========================================================= */
-
-.slope-section {
-
-    width: 100%;
-
-    height: 13%;
-
-    min-height: 40px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    border-bottom:
-        1px solid
-        #292929;
-
-}
-
-
-.section-label {
-
-    color: #777;
-
-    font-size:
-        clamp(
-            7px,
-            1vw,
-            14px
-        );
-
-    font-weight: bold;
-
-    letter-spacing:
-        clamp(
-            1px,
-            0.3vw,
-            3px
-        );
-
-}
-
-
-.slope-value {
-
-    margin-top: 2px;
-
-    color: #00aaff;
-
-    font-size:
-        clamp(
-            20px,
-            3vw,
-            36px
-        );
-
-    font-weight: 900;
 
 }
 
@@ -469,9 +402,11 @@ body {
 
     width: 100%;
 
-    height: 87%;
+    height: 94%;
 
     min-height: 0;
+
+    order: 1;
 
 }
 
@@ -559,6 +494,100 @@ body {
 
     width: 100%;
     height: 100%;
+
+}
+
+
+/* =========================================================
+   SMALL SLOPE BAR - BOTTOM
+========================================================= */
+
+.slope-section {
+
+    width: 100%;
+
+    height: 6%;
+
+    min-height: 30px;
+
+    display: flex;
+
+    flex-direction: row;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    border-top:
+        1px solid
+        #292929;
+
+    border-bottom: none;
+
+    background: #080808;
+
+    order: 2;
+
+}
+
+
+.section-label {
+
+    color: #777;
+
+    font-size:
+        clamp(
+            7px,
+            0.8vw,
+            12px
+        );
+
+    font-weight: bold;
+
+    letter-spacing:
+        clamp(
+            1px,
+            0.25vw,
+            3px
+        );
+
+}
+
+
+.slope-value {
+
+    margin-top: 0;
+
+    color: #00aaff;
+
+    font-size:
+        clamp(
+            16px,
+            1.8vw,
+            28px
+        );
+
+    font-weight: 900;
+
+    line-height: 1;
+
+}
+
+
+.data-unit {
+
+    color: #ffffff;
+
+    font-size:
+        clamp(
+            6px,
+            0.65vw,
+            10px
+        );
+
+    font-weight: bold;
 
 }
 
@@ -1230,50 +1259,32 @@ body {
 
 
 /* =========================================================
-   CAR MAP MARKER
+   SMALL BLUE ARROW VEHICLE MARKER
 ========================================================= */
 
-/*
-   Small top-view car.
+.vehicle-arrow {
 
-   This uses /car.png.
+    width: 0;
 
-   The marker is intentionally small.
-*/
+    height: 0;
 
-.car-marker {
+    border-left:
+        7px solid transparent;
 
-    width: 24px;
+    border-right:
+        7px solid transparent;
 
-    height: 48px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-}
-
-
-.car-marker img {
-
-    width: 24px;
-
-    height: 48px;
-
-    object-fit: contain;
-
-    display: block;
+    border-bottom:
+        15px solid #00aaff;
 
     filter:
         drop-shadow(
-            0 2px 3px
+            0 1px 2px
             rgba(
                 0,
                 0,
                 0,
-                0.7
+                0.9
             )
         );
 
@@ -1499,20 +1510,34 @@ and
     }
 
 
-    .car-marker {
+    .slope-section {
 
-        width: 20px;
+        height: 7%;
 
-        height: 40px;
+        min-height: 25px;
+
+        gap: 5px;
 
     }
 
 
-    .car-marker img {
+    .section-label {
 
-        width: 20px;
+        font-size: 6px;
 
-        height: 40px;
+    }
+
+
+    .slope-value {
+
+        font-size: 18px;
+
+    }
+
+
+    .data-unit {
+
+        font-size: 6px;
 
     }
 
@@ -1594,7 +1619,14 @@ and
 
     .slope-value {
 
-        font-size: 18px;
+        font-size: 16px;
+
+    }
+
+
+    .data-unit {
+
+        font-size: 5px;
 
     }
 
@@ -1764,7 +1796,7 @@ and
             <div class="team-title">
 
                 TEAM
-                <span>RENEW</span>
+                <span>ReNew</span>
 
             </div>
 
@@ -1774,10 +1806,31 @@ and
 
 
     <!-- =====================================================
-         RIGHT SIDE - SLOPE + MAP
+         RIGHT SIDE
+         MAP + SLOPE BOTTOM
     ===================================================== -->
 
     <div class="panel slope-panel">
+
+
+        <!-- =================================================
+             MAP
+        ================================================= -->
+
+        <div class="map-container">
+
+            <div class="map-header">
+
+                <div class="map-title">
+                    LIVE MAP
+                </div>
+
+            </div>
+
+
+            <div id="map"></div>
+
+        </div>
 
 
         <!-- =================================================
@@ -1800,26 +1853,6 @@ and
             <div class="data-unit">
                 DEG
             </div>
-
-        </div>
-
-
-        <!-- =================================================
-             MAP
-        ================================================= -->
-
-        <div class="map-container">
-
-            <div class="map-header">
-
-                <div class="map-title">
-                    LIVE MAP
-                </div>
-
-            </div>
-
-
-            <div id="map"></div>
 
         </div>
 
@@ -2828,45 +2861,29 @@ L.tileLayer(
 
 
 /* =========================================================
-   CAR MARKER
+   SMALL BLUE ARROW
 ========================================================= */
 
-/*
-   Uses your /car.png image.
+const vehicleArrowIcon =
+    L.divIcon({
 
-   IMPORTANT:
-   Make sure car.png is inside:
+        className:
+            "vehicle-arrow-wrapper",
 
-   public/car.png
-*/
-
-
-const carIcon =
-    L.icon({
-
-        iconUrl:
-            "/car.png",
+        html:
+            '<div class="vehicle-arrow"></div>',
 
         iconSize:
             [
-                24,
-                48
+                14,
+                15
             ],
 
         iconAnchor:
             [
-                12,
-                24
-            ],
-
-        popupAnchor:
-            [
-                0,
-                -24
-            ],
-
-        className:
-            "team-car-marker"
+                7,
+                8
+            ]
 
     });
 
@@ -2886,7 +2903,7 @@ const marker =
         {
 
             icon:
-                carIcon,
+                vehicleArrowIcon,
 
             zIndexOffset:
                 1000
@@ -2976,7 +2993,7 @@ function updateVehiclePosition(
 
 
     /* =====================================================
-       MOVE CAR
+       MOVE ARROW
     ===================================================== */
 
     marker.setLatLng(
@@ -2993,7 +3010,7 @@ function updateVehiclePosition(
 
 
     /* =====================================================
-       FOLLOW CAR
+       FOLLOW VEHICLE
     ===================================================== */
 
     map.panTo(
