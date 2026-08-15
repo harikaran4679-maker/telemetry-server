@@ -44,9 +44,7 @@
     href="/manifest.json"
 >
 
-<title>
-    Team ReNew - Driver Dashboard
-</title>
+<title>Team ReNew - Driver Dashboard</title>
 
 
 <!-- =========================================================
@@ -91,11 +89,8 @@
 html,
 body {
 
-    width: 100%;
-    height: 100%;
-
-    margin: 0;
-    padding: 0;
+    width: 100vw;
+    height: 100dvh;
 
     background: #050505;
 
@@ -114,23 +109,47 @@ body {
 
     overscroll-behavior: none;
 
-    -webkit-user-select: none;
     user-select: none;
+    -webkit-user-select: none;
 
 }
 
 
 /* =========================================================
-   BODY
+   DASHBOARD
 ========================================================= */
 
-body {
+.driver-dashboard {
+
+    position: fixed;
+
+    inset: 0;
 
     width: 100vw;
-
     height: 100dvh;
 
-    display: block;
+    padding:
+        max(4px, env(safe-area-inset-top))
+        max(4px, env(safe-area-inset-right))
+        max(4px, env(safe-area-inset-bottom))
+        max(4px, env(safe-area-inset-left));
+
+    display: grid;
+
+    grid-template-columns:
+        10%
+        55%
+        35%;
+
+    grid-template-rows:
+        13%
+        57%
+        13%
+        17%;
+
+    gap: 4px;
+
+    background: #050505;
 
     overflow: hidden;
 
@@ -143,61 +162,13 @@ body {
 
 .panel {
 
-    background: #0b0b0b;
+    background: #080808;
 
     border:
         1px solid
-        #252525;
+        #292929;
 
     position: relative;
-
-    overflow: hidden;
-
-}
-
-
-/* =========================================================
-   MAIN DRIVER DASHBOARD
-========================================================= */
-
-.driver-dashboard {
-
-    position: fixed;
-
-    inset: 0;
-
-    width: 100vw;
-
-    height: 100dvh;
-
-    max-width: none;
-
-    max-height: none;
-
-    margin: 0;
-
-    padding:
-        env(safe-area-inset-top)
-        env(safe-area-inset-right)
-        env(safe-area-inset-bottom)
-        env(safe-area-inset-left);
-
-    display: grid;
-
-    grid-template-columns:
-        10%
-        60%
-        30%;
-
-    grid-template-rows:
-        13%
-        62%
-        13%
-        12%;
-
-    gap: 4px;
-
-    background: #050505;
 
     overflow: hidden;
 
@@ -225,6 +196,14 @@ body {
 
 .connection {
 
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
     font-size:
         clamp(
             7px,
@@ -232,17 +211,14 @@ body {
             15px
         );
 
-    font-weight: bold;
+    font-weight: 900;
 
-    letter-spacing: 1px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 6px;
+    letter-spacing:
+        clamp(
+            0px,
+            0.12vw,
+            2px
+        );
 
     white-space: nowrap;
 
@@ -272,8 +248,6 @@ body {
     box-shadow:
         0 0 10px #ff3030;
 
-    flex-shrink: 0;
-
 }
 
 
@@ -302,7 +276,7 @@ body {
 
 
 /* =========================================================
-   TITLE
+   HEADER
 ========================================================= */
 
 .title-panel {
@@ -326,15 +300,14 @@ body {
 
 .title-content {
 
-    width: 100%;
-
-    height: 100%;
-
     display: flex;
 
     align-items: center;
 
     justify-content: center;
+
+    width: 100%;
+    height: 100%;
 
     gap:
         clamp(
@@ -350,16 +323,16 @@ body {
 
     width:
         clamp(
-            25px,
-            5vw,
-            58px
+            22px,
+            4vw,
+            55px
         );
 
     height:
         clamp(
-            25px,
-            5vw,
-            58px
+            22px,
+            4vw,
+            55px
         );
 
     object-fit: contain;
@@ -371,7 +344,7 @@ body {
 
     font-size:
         clamp(
-            17px,
+            18px,
             3vw,
             46px
         );
@@ -380,14 +353,10 @@ body {
 
     letter-spacing:
         clamp(
-            2px,
+            1px,
             0.4vw,
             5px
         );
-
-    color: #ffffff;
-
-    text-transform: uppercase;
 
     white-space: nowrap;
 
@@ -402,36 +371,65 @@ body {
 
 
 /* =========================================================
-   SLOPE
+   RIGHT SIDE
 ========================================================= */
 
 .slope-panel {
 
     grid-column: 3;
 
-    grid-row: 1;
+    grid-row: 1 / 5;
 
     display: flex;
 
     flex-direction: column;
 
-    justify-content: center;
+    align-items: center;
+
+    justify-content: flex-start;
+
+}
+
+
+/* =========================================================
+   SLOPE
+========================================================= */
+
+.slope-section {
+
+    width: 100%;
+
+    height: 13%;
+
+    min-height: 40px;
+
+    display: flex;
+
+    flex-direction: column;
 
     align-items: center;
+
+    justify-content: center;
+
+    border-bottom:
+        1px solid
+        #292929;
 
 }
 
 
 .section-label {
 
+    color: #777;
+
     font-size:
         clamp(
             7px,
             1vw,
-            13px
+            14px
         );
 
-    color: #777;
+    font-weight: bold;
 
     letter-spacing:
         clamp(
@@ -440,8 +438,6 @@ body {
             3px
         );
 
-    text-transform: uppercase;
-
 }
 
 
@@ -449,28 +445,120 @@ body {
 
     margin-top: 2px;
 
+    color: #00aaff;
+
     font-size:
         clamp(
-            18px,
-            2.5vw,
-            32px
+            20px,
+            3vw,
+            36px
         );
 
     font-weight: 900;
 
-    color: #00aaff;
+}
+
+
+/* =========================================================
+   MAP CONTAINER
+========================================================= */
+
+.map-container {
+
+    position: relative;
+
+    width: 100%;
+
+    height: 87%;
+
+    min-height: 0;
 
 }
 
 
-.slope-panel .data-unit {
+/* =========================================================
+   MAP HEADER
+========================================================= */
+
+.map-header {
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height:
+        clamp(
+            25px,
+            4vh,
+            42px
+        );
+
+    z-index: 1000;
+
+    display: flex;
+
+    align-items: center;
+
+    padding:
+        0
+        clamp(
+            5px,
+            0.8vw,
+            12px
+        );
+
+    background:
+        rgba(
+            5,
+            5,
+            5,
+            0.92
+        );
+
+    border-bottom:
+        1px solid
+        #292929;
+
+}
+
+
+.map-title {
+
+    color: #00aaff;
 
     font-size:
         clamp(
-            6px,
-            0.8vw,
-            10px
+            8px,
+            1.2vw,
+            16px
         );
+
+    font-weight: 900;
+
+    letter-spacing:
+        clamp(
+            1px,
+            0.2vw,
+            3px
+        );
+
+}
+
+
+/* =========================================================
+   MAP
+========================================================= */
+
+#map {
+
+    position: absolute;
+
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
 
 }
 
@@ -483,7 +571,7 @@ body {
 
     grid-column: 1;
 
-    grid-row: 2;
+    grid-row: 2 / 4;
 
     display: flex;
 
@@ -493,14 +581,32 @@ body {
 
     justify-content: center;
 
-    padding: 4px;
+    padding: 5px;
 
 }
 
 
-.vertical-label {
+.throttle-title {
 
-    display: none;
+    color: #777;
+
+    font-size:
+        clamp(
+            6px,
+            0.8vw,
+            12px
+        );
+
+    font-weight: bold;
+
+    letter-spacing:
+        clamp(
+            0px,
+            0.15vw,
+            2px
+        );
+
+    margin-bottom: 8px;
 
 }
 
@@ -513,7 +619,7 @@ body {
         clamp(
             30px,
             4vw,
-            78px
+            70px
         );
 
     height: 75%;
@@ -542,7 +648,7 @@ body {
     background:
         linear-gradient(
             to top,
-            #00aaff,
+            #0077ff,
             #00d9ff
         );
 
@@ -565,24 +671,18 @@ body {
 
     position: absolute;
 
-    bottom:
-        clamp(
-            5px,
-            1vh,
-            18px
-        );
-
     left: 0;
+    right: 0;
 
-    width: 100%;
+    bottom: 8px;
 
     text-align: center;
 
     font-size:
         clamp(
-            10px,
-            1.6vw,
-            22px
+            9px,
+            1.5vw,
+            20px
         );
 
     font-weight: 900;
@@ -595,25 +695,20 @@ body {
 }
 
 
-.throttle-title {
+.throttle-label-bottom {
 
-    margin-top: 5px;
+    margin-top: 6px;
 
     color: #777;
 
     font-size:
         clamp(
-            6px,
-            0.8vw,
-            11px
+            5px,
+            0.7vw,
+            10px
         );
 
-    letter-spacing:
-        clamp(
-            0px,
-            0.15vw,
-            2px
-        );
+    letter-spacing: 1px;
 
 }
 
@@ -622,50 +717,173 @@ body {
    CENTER AREA
 ========================================================= */
 
-.main-center {
+.center-area {
 
     grid-column: 2;
 
-    grid-row: 2;
+    grid-row: 2 / 5;
 
     display: grid;
 
     grid-template-rows:
-        65%
-        35%;
+        48%
+        16%
+        36%;
 
     gap: 4px;
 
-    background: #050505;
-
     min-width: 0;
-
     min-height: 0;
-
-    overflow: hidden;
 
 }
 
 
 /* =========================================================
-   SPEED
+   TOP THREE CARDS
 ========================================================= */
 
-.speed-panel {
+.top-cards {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr
+        1fr;
+
+    gap: 4px;
+
+    min-width: 0;
+    min-height: 0;
+
+}
+
+
+/* =========================================================
+   MOTOR CARD
+========================================================= */
+
+.motor-card {
 
     display: flex;
 
     flex-direction: column;
 
-    justify-content: center;
+    align-items: center;
+
+    justify-content: space-evenly;
+
+    padding: 4px;
+
+}
+
+
+.card-title {
+
+    color: #777;
+
+    font-size:
+        clamp(
+            7px,
+            1vw,
+            14px
+        );
+
+    font-weight: bold;
+
+    letter-spacing:
+        clamp(
+            0px,
+            0.15vw,
+            2px
+        );
+
+    text-align: center;
+
+}
+
+
+.card-value {
+
+    color: #00aaff;
+
+    font-size:
+        clamp(
+            20px,
+            3vw,
+            48px
+        );
+
+    font-weight: 900;
+
+    line-height: 1;
+
+}
+
+
+.card-unit {
+
+    color: #888;
+
+    font-size:
+        clamp(
+            6px,
+            0.7vw,
+            11px
+        );
+
+}
+
+
+.sub-label {
+
+    color: #777;
+
+    font-size:
+        clamp(
+            6px,
+            0.8vw,
+            12px
+        );
+
+    margin-top: 3px;
+
+}
+
+
+.motor-temp {
+
+    color: #ffffff;
+
+    font-size:
+        clamp(
+            12px,
+            1.7vw,
+            25px
+        );
+
+    font-weight: 900;
+
+}
+
+
+/* =========================================================
+   SPEED CARD
+========================================================= */
+
+.speed-card {
+
+    display: flex;
+
+    flex-direction: column;
 
     align-items: center;
+
+    justify-content: center;
 
     border-top:
         3px solid
         #00aaff;
-
-    min-height: 0;
 
 }
 
@@ -676,37 +894,39 @@ body {
 
     font-size:
         clamp(
-            8px,
-            1.3vw,
-            16px
+            7px,
+            1vw,
+            15px
         );
+
+    font-weight: bold;
 
     letter-spacing:
         clamp(
-            3px,
-            0.6vw,
-            8px
+            2px,
+            0.5vw,
+            7px
         );
-
-    margin-bottom: 3px;
 
 }
 
 
 .speed-value {
 
-    font-size:
-        clamp(
-            48px,
-            10vw,
-            180px
-        );
-
-    line-height: 0.8;
-
-    font-weight: 900;
+    margin-top: 5px;
 
     color: #ffffff;
+
+    font-size:
+        clamp(
+            45px,
+            8vw,
+            130px
+        );
+
+    line-height: 0.9;
+
+    font-weight: 900;
 
     text-shadow:
         0 0 18px
@@ -722,432 +942,163 @@ body {
 
 .speed-unit {
 
-    margin-top: 5px;
+    margin-top: 8px;
 
     color: #00aaff;
 
     font-size:
         clamp(
-            8px,
-            1.4vw,
-            18px
+            7px,
+            1vw,
+            14px
         );
 
     font-weight: bold;
 
-    letter-spacing:
-        clamp(
-            2px,
-            0.3vw,
-            4px
-        );
+    letter-spacing: 2px;
 
 }
 
 
 /* =========================================================
-   POWER ROW
+   FUEL CELL CARD
 ========================================================= */
 
-.power-row {
-
-    display: grid;
-
-    grid-template-columns:
-        1fr
-        1fr;
-
-    gap: 4px;
-
-    min-width: 0;
-
-    min-height: 0;
-
-}
-
-
-.power-panel {
+.fuel-card {
 
     display: flex;
 
     flex-direction: column;
 
-    justify-content: center;
-
     align-items: center;
 
-    min-width: 0;
+    justify-content: space-evenly;
 
-    min-height: 0;
-
-    padding: 2px;
-
-}
-
-
-.power-label {
-
-    color: #777;
-
-    font-size:
-        clamp(
-            6px,
-            1vw,
-            14px
-        );
-
-    letter-spacing:
-        clamp(
-            0px,
-            0.15vw,
-            2px
-        );
-
-    text-align: center;
-
-    white-space: nowrap;
+    padding: 4px;
 
 }
 
 
 .fuel-power {
 
-    margin-top: 3px;
-
-    font-size:
-        clamp(
-            18px,
-            3.5vw,
-            60px
-        );
-
-    line-height: 1;
-
-    font-weight: 900;
-
     color: #00ff9d;
 
-}
-
-
-.motor-power {
-
-    margin-top: 3px;
-
     font-size:
         clamp(
-            18px,
-            3.5vw,
-            60px
+            20px,
+            3vw,
+            48px
         );
-
-    line-height: 1;
 
     font-weight: 900;
 
-    color: #00aaff;
+    line-height: 1;
 
 }
 
 
-.power-unit {
+.fuel-temp {
 
-    color: #888;
+    color: #ffffff;
 
     font-size:
         clamp(
-            6px,
-            0.8vw,
-            12px
+            12px,
+            1.7vw,
+            25px
         );
+
+    font-weight: 900;
 
 }
 
 
 /* =========================================================
-   MAP
+   TELEMETRY ROW
 ========================================================= */
 
-.map-panel {
+.telemetry-row {
 
-    grid-column: 3;
+    display: grid;
 
-    grid-row: 2;
+    grid-template-columns:
+        1fr
+        1fr
+        1fr;
+
+    gap: 4px;
+
+    min-height: 0;
+
+}
+
+
+.telemetry-box {
 
     display: flex;
 
     flex-direction: column;
 
-    min-width: 0;
-
-    min-height: 0;
-
-}
-
-
-.map-header {
-
-    height:
-        clamp(
-            22px,
-            3.5vh,
-            48px
-        );
-
-    min-height:
-        clamp(
-            22px,
-            3.5vh,
-            48px
-        );
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    padding:
-        0
-        clamp(
-            5px,
-            0.8vw,
-            12px
-        );
-
-    border-bottom:
-        1px solid
-        #252525;
-
-}
-
-
-.map-title {
-
-    color: #00aaff;
-
-    font-size:
-        clamp(
-            8px,
-            1.3vw,
-            17px
-        );
-
-    font-weight: bold;
-
-    letter-spacing:
-        clamp(
-            1px,
-            0.2vw,
-            2px
-        );
-
-}
-
-
-.clear-button {
-
-    background: #050505;
-
-    color: #00aaff;
-
-    border:
-        1px solid
-        #00aaff;
-
-    padding:
-        clamp(
-            2px,
-            0.4vw,
-            7px
-        )
-        clamp(
-            5px,
-            0.8vw,
-            15px
-        );
-
-    font-size:
-        clamp(
-            6px,
-            0.8vw,
-            12px
-        );
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-}
-
-
-.clear-button:hover {
-
-    background: #00aaff;
-
-    color: #000;
-
-}
-
-
-#map {
-
-    flex: 1;
-
-    min-height: 0;
-
-    width: 100%;
-
-}
-
-
-/* =========================================================
-   ROUTE STATUS
-========================================================= */
-
-.route-status {
-
-    position: absolute;
-
-    bottom: 5px;
-
-    left: 5px;
-
-    z-index: 1000;
-
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.75
-        );
-
-    padding:
-        3px 6px;
-
-    font-size:
-        clamp(
-            6px,
-            0.7vw,
-            11px
-        );
-
-    color: #ffffff;
-
-    border:
-        1px solid
-        #333;
-
-}
-
-
-/* =========================================================
-   BOTTOM TELEMETRY
-========================================================= */
-
-.bottom-data {
-
-    grid-column: 1 / 4;
-
-    grid-row: 3;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(
-            4,
-            1fr
-        );
-
-    gap: 4px;
-
-    background: #050505;
-
-    min-width: 0;
-
-    min-height: 0;
-
-}
-
-
-.data-box {
-
-    display: flex;
-
     align-items: center;
 
     justify-content: center;
 
-    gap:
-        clamp(
-            3px,
-            0.5vw,
-            10px
-        );
-
-    min-width: 0;
-
-    min-height: 0;
-
-    padding: 2px;
-
 }
 
 
-.data-label {
+.telemetry-label {
 
     color: #777;
 
     font-size:
         clamp(
             6px,
-            1vw,
-            13px
+            0.8vw,
+            12px
         );
+
+    font-weight: bold;
 
 }
 
 
-.data-value {
+.telemetry-value {
+
+    margin-top: 3px;
+
+    color: #ffffff;
 
     font-size:
         clamp(
-            11px,
+            15px,
             2vw,
-            24px
+            28px
         );
 
     font-weight: 900;
 
-    color: #ffffff;
-
 }
 
 
-.data-unit {
+.telemetry-unit {
 
     color: #888;
 
     font-size:
         clamp(
-            6px,
+            5px,
             0.7vw,
-            11px
+            10px
         );
 
 }
 
 
 /* =========================================================
-   SYSTEM STATUS
+   MESSAGE
 ========================================================= */
 
-.system-panel {
-
-    grid-column: 1 / 4;
-
-    grid-row: 4;
+.message-panel {
 
     display: flex;
 
@@ -1156,10 +1107,8 @@ body {
     justify-content: center;
 
     border-left:
-        4px solid
+        5px solid
         #00ff9d;
-
-    min-height: 0;
 
 }
 
@@ -1170,9 +1119,9 @@ body {
 
     font-size:
         clamp(
-            12px,
-            2.5vw,
-            40px
+            10px,
+            2vw,
+            30px
         );
 
     font-weight: 900;
@@ -1186,12 +1135,12 @@ body {
 
     text-transform: uppercase;
 
-    white-space: nowrap;
+    text-align: center;
 
 }
 
 
-.system-panel.warning {
+.message-panel.warning {
 
     border-left-color:
         #ff3030;
@@ -1199,7 +1148,8 @@ body {
 }
 
 
-.system-panel.warning .system-message {
+.message-panel.warning
+.system-message {
 
     color: #ff3030;
 
@@ -1215,67 +1165,12 @@ body {
 @keyframes warningBlink {
 
     from {
-
         opacity: 1;
-
     }
 
     to {
-
         opacity: 0.45;
-
     }
-
-}
-
-
-/* =========================================================
-   FULLSCREEN BUTTON
-========================================================= */
-
-.fullscreen-button {
-
-    position: fixed;
-
-    top:
-        calc(
-            env(safe-area-inset-top) + 8px
-        );
-
-    right:
-        calc(
-            env(safe-area-inset-right) + 8px
-        );
-
-    z-index: 100000;
-
-    background: #050505;
-
-    color: #00aaff;
-
-    border:
-        1px solid
-        #00aaff;
-
-    padding:
-        8px 12px;
-
-    font-size: 11px;
-
-    font-weight: bold;
-
-    border-radius: 3px;
-
-    cursor: pointer;
-
-}
-
-
-.fullscreen-button:active {
-
-    background: #00aaff;
-
-    color: #000;
 
 }
 
@@ -1283,6 +1178,18 @@ body {
 /* =========================================================
    LEAFLET
 ========================================================= */
+
+.leaflet-control-zoom {
+
+    margin-top:
+        clamp(
+            30px,
+            5vh,
+            55px
+        ) !important;
+
+}
+
 
 .leaflet-control-zoom a {
 
@@ -1305,7 +1212,7 @@ body {
             0,
             0,
             0,
-            0.65
+            0.75
         ) !important;
 
     color:
@@ -1323,7 +1230,107 @@ body {
 
 
 /* =========================================================
-   ROTATE OVERLAY
+   CAR MAP MARKER
+========================================================= */
+
+/*
+   Small top-view car.
+
+   This uses /car.png.
+
+   The marker is intentionally small.
+*/
+
+.car-marker {
+
+    width: 24px;
+
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+}
+
+
+.car-marker img {
+
+    width: 24px;
+
+    height: 48px;
+
+    object-fit: contain;
+
+    display: block;
+
+    filter:
+        drop-shadow(
+            0 2px 3px
+            rgba(
+                0,
+                0,
+                0,
+                0.7
+            )
+        );
+
+}
+
+
+/* =========================================================
+   FULLSCREEN BUTTON
+========================================================= */
+
+.fullscreen-button {
+
+    position: fixed;
+
+    top:
+        calc(
+            env(safe-area-inset-top) + 6px
+        );
+
+    right:
+        calc(
+            env(safe-area-inset-right) + 6px
+        );
+
+    z-index: 99999;
+
+    background: #050505;
+
+    color: #00aaff;
+
+    border:
+        1px solid
+        #00aaff;
+
+    padding:
+        6px 10px;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    border-radius: 3px;
+
+}
+
+
+.fullscreen-button:active {
+
+    background: #00aaff;
+
+    color: #000;
+
+}
+
+
+/* =========================================================
+   ROTATE SCREEN
 ========================================================= */
 
 .rotate-overlay {
@@ -1334,7 +1341,7 @@ body {
 
     inset: 0;
 
-    z-index: 99999;
+    z-index: 999999;
 
     background: #050505;
 
@@ -1346,79 +1353,27 @@ body {
 
     text-align: center;
 
-    padding: 30px;
-
-}
-
-
-.rotate-icon {
-
-    font-size: 60px;
-
-    margin-bottom: 20px;
-
-    animation:
-        rotatePhone
-        1.5s
-        infinite
-        ease-in-out;
-
 }
 
 
 .rotate-title {
 
-    color: #ffffff;
-
     font-size: 22px;
 
     font-weight: 900;
 
-    letter-spacing: 2px;
+    color: #ffffff;
 
 }
 
 
 .rotate-text {
 
+    margin-top: 10px;
+
     color: #777;
 
     font-size: 14px;
-
-    margin-top: 10px;
-
-}
-
-
-@keyframes rotatePhone {
-
-    0% {
-
-        transform:
-            rotate(0deg);
-
-    }
-
-    40% {
-
-        transform:
-            rotate(90deg);
-
-    }
-
-    70% {
-
-        transform:
-            rotate(90deg);
-
-    }
-
-    100% {
-
-        transform:
-            rotate(0deg);
-
-    }
 
 }
 
@@ -1432,51 +1387,26 @@ body {
 and
 (orientation: landscape) {
 
-    html,
-    body {
-
-        width: 100vw;
-
-        height: 100dvh;
-
-        overflow: hidden;
-
-    }
-
-
     .driver-dashboard {
 
-        position: fixed;
-
-        inset: 0;
-
         width: 100vw;
 
         height: 100dvh;
 
-        padding:
-            env(safe-area-inset-top)
-            env(safe-area-inset-right)
-            env(safe-area-inset-bottom)
-            env(safe-area-inset-left);
+        grid-template-columns:
+            10%
+            55%
+            35%;
 
-        gap: 3px;
+        grid-template-rows:
+            14%
+            54%
+            14%
+            18%;
 
-        margin: 0;
+        gap: 2px;
 
-    }
-
-
-    .connection {
-
-        font-size:
-            clamp(
-                7px,
-                1.6vw,
-                12px
-            );
-
-        gap: 3px;
+        padding: 2px;
 
     }
 
@@ -1485,7 +1415,7 @@ and
 
         font-size:
             clamp(
-                16px,
+                14px,
                 4vw,
                 30px
             );
@@ -1495,201 +1425,94 @@ and
 
     .team-logo {
 
-        width:
-            clamp(
-                22px,
-                5vh,
-                36px
-            );
+        width: 24px;
+        height: 24px;
 
-        height:
+    }
+
+
+    .speed-value {
+
+        font-size:
             clamp(
-                22px,
-                5vh,
-                36px
+                38px,
+                10vh,
+                75px
             );
 
     }
 
 
-    .slope-value {
+    .card-value {
 
         font-size:
             clamp(
                 16px,
                 4vw,
-                28px
-            );
-
-    }
-
-
-    .throttle-bar {
-
-        width:
-            clamp(
-                28px,
-                5vw,
-                48px
-            );
-
-        height: 72%;
-
-    }
-
-
-    .speed-value {
-
-        font-size:
-            clamp(
-                50px,
-                17vh,
-                110px
-            );
-
-    }
-
-
-    .fuel-power,
-    .motor-power {
-
-        font-size:
-            clamp(
-                18px,
-                6vw,
-                40px
-            );
-
-    }
-
-
-    .map-header {
-
-        height: 24px;
-
-        min-height: 24px;
-
-    }
-
-
-    .bottom-data {
-
-        gap: 3px;
-
-    }
-
-
-    .system-message {
-
-        font-size:
-            clamp(
-                11px,
-                3vw,
-                22px
-            );
-
-    }
-
-}
-
-
-/* =========================================================
-   VERY SHORT LANDSCAPE
-========================================================= */
-
-@media
-(max-width: 1100px)
-and
-(orientation: landscape)
-and
-(max-height: 430px) {
-
-    .driver-dashboard {
-
-        padding: 2px;
-
-        gap: 2px;
-
-    }
-
-
-    .speed-value {
-
-        font-size:
-            clamp(
-                45px,
-                17vh,
-                90px
-            );
-
-    }
-
-
-    .speed-label {
-
-        font-size: 8px;
-
-        letter-spacing: 3px;
-
-    }
-
-
-    .speed-unit {
-
-        font-size: 9px;
-
-    }
-
-
-    .fuel-power,
-    .motor-power {
-
-        font-size:
-            clamp(
-                16px,
-                6vw,
                 30px
             );
 
     }
 
 
-    .power-label {
+    .fuel-power {
 
-        font-size: 6px;
-
-    }
-
-
-    .map-header {
-
-        height: 20px;
-
-        min-height: 20px;
+        font-size:
+            clamp(
+                16px,
+                4vw,
+                30px
+            );
 
     }
 
 
-    .map-title {
+    .motor-temp,
+    .fuel-temp {
 
-        font-size: 8px;
+        font-size:
+            clamp(
+                10px,
+                2vw,
+                18px
+            );
 
     }
 
 
-    .clear-button {
+    .message-panel {
 
-        padding:
-            1px 5px;
-
-        font-size: 6px;
+        border-left-width: 3px;
 
     }
 
 
     .system-message {
 
-        font-size: 10px;
+        font-size:
+            clamp(
+                9px,
+                2.5vw,
+                18px
+            );
+
+    }
+
+
+    .car-marker {
+
+        width: 20px;
+
+        height: 40px;
+
+    }
+
+
+    .car-marker img {
+
+        width: 20px;
+
+        height: 40px;
 
     }
 
@@ -1697,7 +1520,7 @@ and
 
 
 /* =========================================================
-   PORTRAIT PHONE
+   PORTRAIT
 ========================================================= */
 
 @media
@@ -1729,23 +1552,7 @@ and
 
 
 /* =========================================================
-   DESKTOP
-========================================================= */
-
-@media
-(min-width: 1101px) {
-
-    .rotate-overlay {
-
-        display: none;
-
-    }
-
-}
-
-
-/* =========================================================
-   FULLSCREEN MODE
+   FULLSCREEN
 ========================================================= */
 
 :fullscreen {
@@ -1755,22 +1562,112 @@ and
 }
 
 
-:fullscreen .driver-dashboard {
+:fullscreen .fullscreen-button {
 
-    width: 100vw;
-
-    height: 100dvh;
+    display: none;
 
 }
 
 
 /* =========================================================
-   HIDE FULLSCREEN BUTTON WHEN FULLSCREEN
+   VERY SMALL LANDSCAPE
 ========================================================= */
 
-:fullscreen .fullscreen-button {
+@media
+(max-width: 700px)
+and
+(orientation: landscape) {
 
-    display: none;
+    .connection {
+
+        font-size: 7px;
+
+    }
+
+
+    .section-label {
+
+        font-size: 6px;
+
+    }
+
+
+    .slope-value {
+
+        font-size: 18px;
+
+    }
+
+
+    .speed-value {
+
+        font-size: 42px;
+
+    }
+
+
+    .speed-label {
+
+        font-size: 7px;
+
+    }
+
+
+    .speed-unit {
+
+        font-size: 7px;
+
+    }
+
+
+    .card-title {
+
+        font-size: 6px;
+
+    }
+
+
+    .card-value {
+
+        font-size: 18px;
+
+    }
+
+
+    .sub-label {
+
+        font-size: 5px;
+
+    }
+
+
+    .motor-temp,
+    .fuel-temp {
+
+        font-size: 10px;
+
+    }
+
+
+    .telemetry-label {
+
+        font-size: 5px;
+
+    }
+
+
+    .telemetry-value {
+
+        font-size: 14px;
+
+    }
+
+
+    .telemetry-unit {
+
+        font-size: 5px;
+
+    }
 
 }
 
@@ -1783,7 +1680,7 @@ and
 
 
 <!-- =========================================================
-     ROTATE MESSAGE
+     ROTATE OVERLAY
 ========================================================= -->
 
 <div
@@ -1791,24 +1688,19 @@ and
     id="rotateOverlay"
 >
 
-    <div class="rotate-icon">
-        📱
-    </div>
-
     <div class="rotate-title">
         ROTATE DEVICE
     </div>
 
     <div class="rotate-text">
         Turn your phone to landscape mode
-        for the Driver Dashboard
     </div>
 
 </div>
 
 
 <!-- =========================================================
-     FULLSCREEN BUTTON
+     FULLSCREEN
 ========================================================= -->
 
 <button
@@ -1822,7 +1714,7 @@ and
 
 
 <!-- =========================================================
-     DRIVER DASHBOARD
+     MAIN DASHBOARD
 ========================================================= -->
 
 <div class="driver-dashboard">
@@ -1843,9 +1735,7 @@ and
                 class="connection-dot"
             ></span>
 
-            <span
-                id="connectionText"
-            >
+            <span id="connectionText">
                 NO DATA
             </span>
 
@@ -1855,7 +1745,7 @@ and
 
 
     <!-- =====================================================
-         TEAM TITLE
+         HEADER
     ===================================================== -->
 
     <div class="panel title-panel">
@@ -1884,29 +1774,52 @@ and
 
 
     <!-- =====================================================
-         SLOPE
+         RIGHT SIDE - SLOPE + MAP
     ===================================================== -->
 
     <div class="panel slope-panel">
 
-        <div class="section-label">
 
-            SLOPE
+        <!-- =================================================
+             SLOPE
+        ================================================= -->
+
+        <div class="slope-section">
+
+            <div class="section-label">
+                SLOPE
+            </div>
+
+            <div
+                class="slope-value"
+                id="slope"
+            >
+                --
+            </div>
+
+            <div class="data-unit">
+                DEG
+            </div>
 
         </div>
 
-        <div
-            class="slope-value"
-            id="slope"
-        >
 
-            --
+        <!-- =================================================
+             MAP
+        ================================================= -->
 
-        </div>
+        <div class="map-container">
 
-        <div class="data-unit">
+            <div class="map-header">
 
-            DEG
+                <div class="map-title">
+                    LIVE MAP
+                </div>
+
+            </div>
+
+
+            <div id="map"></div>
 
         </div>
 
@@ -1919,10 +1832,8 @@ and
 
     <div class="panel throttle-panel">
 
-        <div class="vertical-label">
-
-            THROTTLE
-
+        <div class="throttle-title">
+            THROTTLE %
         </div>
 
 
@@ -1938,18 +1849,14 @@ and
                 class="throttle-value"
                 id="throttleValue"
             >
-
                 0%
-
             </div>
 
         </div>
 
 
-        <div class="throttle-title">
-
-            THROTTLE %
-
+        <div class="throttle-label-bottom">
+            0 — 100
         </div>
 
     </div>
@@ -1959,292 +1866,204 @@ and
          CENTER
     ===================================================== -->
 
-    <div class="main-center">
+    <div class="center-area">
 
 
         <!-- =================================================
-             SPEED
+             TOP CARDS
         ================================================= -->
 
-        <div class="panel speed-panel">
-
-            <div class="speed-label">
-
-                SPEED
-
-            </div>
+        <div class="top-cards">
 
 
-            <div
-                class="speed-value"
-                id="speed"
-            >
+            <!-- =================================================
+                 MOTOR
+            ================================================= -->
 
-                0
+            <div class="panel motor-card">
 
-            </div>
-
-
-            <div class="speed-unit">
-
-                KM/H
-
-            </div>
-
-        </div>
-
-
-        <!-- =================================================
-             POWER
-        ================================================= -->
-
-        <div class="power-row">
-
-
-            <!-- FUEL CELL -->
-
-            <div class="panel power-panel">
-
-                <div class="power-label">
-
-                    FUEL CELL POWER
-
+                <div class="card-title">
+                    MOTOR POWER
                 </div>
 
+                <div
+                    class="card-value"
+                    id="motorPower"
+                >
+                    0
+                </div>
+
+                <div class="card-unit">
+                    W
+                </div>
+
+
+                <div class="sub-label">
+                    MOTOR TEMPERATURE
+                </div>
+
+                <div
+                    class="motor-temp"
+                    id="motorTemperature"
+                >
+                    0.0 °C
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 SPEED
+            ================================================= -->
+
+            <div class="panel speed-card">
+
+                <div class="speed-label">
+                    SPEED
+                </div>
+
+                <div
+                    class="speed-value"
+                    id="speed"
+                >
+                    0
+                </div>
+
+                <div class="speed-unit">
+                    KM/H
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 FUEL CELL
+            ================================================= -->
+
+            <div class="panel fuel-card">
+
+                <div class="card-title">
+                    FUEL CELL POWER
+                </div>
 
                 <div
                     class="fuel-power"
                     id="fuelPower"
                 >
-
                     0
-
                 </div>
 
-
-                <div class="power-unit">
-
+                <div class="card-unit">
                     W
-
                 </div>
 
-            </div>
 
-
-            <!-- MOTOR -->
-
-            <div class="panel power-panel">
-
-                <div class="power-label">
-
-                    MOTOR POWER
-
+                <div class="sub-label">
+                    FUEL CELL TEMPERATURE
                 </div>
-
 
                 <div
-                    class="motor-power"
-                    id="motorPower"
+                    class="fuel-temp"
+                    id="fuelTemperature"
                 >
-
-                    0
-
+                    0.0 °C
                 </div>
 
+            </div>
 
-                <div class="power-unit">
+        </div>
 
-                    W
 
+        <!-- =================================================
+             TELEMETRY
+        ================================================= -->
+
+        <div class="telemetry-row">
+
+
+            <!-- DISTANCE -->
+
+            <div class="panel telemetry-box">
+
+                <div class="telemetry-label">
+                    DISTANCE
+                </div>
+
+                <div
+                    class="telemetry-value"
+                    id="distance"
+                >
+                    0.0
+                </div>
+
+                <div class="telemetry-unit">
+                    m
                 </div>
 
             </div>
 
 
-        </div>
+            <!-- ACCELERATION -->
 
-    </div>
+            <div class="panel telemetry-box">
 
+                <div class="telemetry-label">
+                    ACCELERATION
+                </div>
 
-    <!-- =====================================================
-         LIVE MAP
-    ===================================================== -->
+                <div
+                    class="telemetry-value"
+                    id="acceleration"
+                >
+                    0.00
+                </div>
 
-    <div class="panel map-panel">
-
-
-        <div class="map-header">
-
-            <div class="map-title">
-
-                LIVE MAP
+                <div class="telemetry-unit">
+                    m/s²
+                </div>
 
             </div>
 
 
-            <button
-                class="clear-button"
-                id="clearRoute"
-            >
+            <!-- DECELERATION -->
 
-                CLEAR
+            <div class="panel telemetry-box">
 
-            </button>
+                <div class="telemetry-label">
+                    DECELERATION
+                </div>
+
+                <div
+                    class="telemetry-value"
+                    id="deceleration"
+                >
+                    0.00
+                </div>
+
+                <div class="telemetry-unit">
+                    m/s²
+                </div>
+
+            </div>
 
         </div>
 
 
-        <div id="map"></div>
-
+        <!-- =================================================
+             SYSTEM MESSAGE
+        ================================================= -->
 
         <div
-            class="route-status"
-            id="routeStatus"
+            class="panel message-panel"
+            id="systemPanel"
         >
 
-            Route: 0 points
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         BOTTOM DATA
-    ===================================================== -->
-
-    <div class="bottom-data">
-
-
-        <!-- ACCELERATION -->
-
-        <div class="panel data-box">
-
-            <span class="data-label">
-
-                ACCEL
-
-            </span>
-
-            <span
-                class="data-value"
-                id="acceleration"
+            <div
+                class="system-message"
+                id="systemMessage"
             >
-
-                0.00
-
-            </span>
-
-            <span class="data-unit">
-
-                m/s²
-
-            </span>
-
-        </div>
-
-
-        <!-- DISTANCE -->
-
-        <div class="panel data-box">
-
-            <span class="data-label">
-
-                DIST
-
-            </span>
-
-            <span
-                class="data-value"
-                id="distance"
-            >
-
-                0.0
-
-            </span>
-
-            <span class="data-unit">
-
-                m
-
-            </span>
-
-        </div>
-
-
-        <!-- DECELERATION -->
-
-        <div class="panel data-box">
-
-            <span class="data-label">
-
-                DECEL
-
-            </span>
-
-            <span
-                class="data-value"
-                id="deceleration"
-            >
-
-                0.00
-
-            </span>
-
-            <span class="data-unit">
-
-                m/s²
-
-            </span>
-
-        </div>
-
-
-        <!-- TEMPERATURE -->
-
-        <div class="panel data-box">
-
-            <span class="data-label">
-
-                TEMP
-
-            </span>
-
-            <span
-                class="data-value"
-                id="temperature"
-            >
-
-                0.0
-
-            </span>
-
-            <span class="data-unit">
-
-                °C
-
-            </span>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         SYSTEM STATUS
-    ===================================================== -->
-
-    <div
-        class="panel system-panel"
-        id="systemPanel"
-    >
-
-        <div
-            class="system-message"
-            id="systemMessage"
-        >
-
-            SYSTEM NORMAL
+                SYSTEM NORMAL
+            </div>
 
         </div>
 
@@ -2297,15 +2116,27 @@ const throttleValue =
     );
 
 
+const motorPowerElement =
+    document.getElementById(
+        "motorPower"
+    );
+
+
 const fuelPowerElement =
     document.getElementById(
         "fuelPower"
     );
 
 
-const motorPowerElement =
+const motorTemperatureElement =
     document.getElementById(
-        "motorPower"
+        "motorTemperature"
+    );
+
+
+const fuelTemperatureElement =
+    document.getElementById(
+        "fuelTemperature"
     );
 
 
@@ -2318,12 +2149,6 @@ const accelerationElement =
 const decelerationElement =
     document.getElementById(
         "deceleration"
-    );
-
-
-const temperatureElement =
-    document.getElementById(
-        "temperature"
     );
 
 
@@ -2351,18 +2176,6 @@ const systemMessage =
     );
 
 
-const routeStatus =
-    document.getElementById(
-        "routeStatus"
-    );
-
-
-const clearRouteButton =
-    document.getElementById(
-        "clearRoute"
-    );
-
-
 const fullscreenButton =
     document.getElementById(
         "fullscreenButton"
@@ -2370,17 +2183,13 @@ const fullscreenButton =
 
 
 /* =========================================================
-   TELEMETRY TIMEOUT
+   CONNECTION
 ========================================================= */
 
 let lastTelemetryTime = 0;
 
 const TELEMETRY_TIMEOUT = 3000;
 
-
-/* =========================================================
-   CONNECTION STATUS
-========================================================= */
 
 function setConnected() {
 
@@ -2453,16 +2262,19 @@ socket.on(
 
 
 /* =========================================================
-   TELEMETRY TIME CHECK
+   TELEMETRY TIMEOUT
 ========================================================= */
 
 setInterval(
     () => {
 
         if (
-            lastTelemetryTime !== 0 &&
-            Date.now() -
-            lastTelemetryTime <=
+            lastTelemetryTime !== 0
+            &&
+            Date.now()
+            -
+            lastTelemetryTime
+            <=
             TELEMETRY_TIMEOUT
         ) {
 
@@ -2528,12 +2340,9 @@ socket.on(
         );
 
 
-        /* ================================================
-           TELEMETRY RECEIVED
-        ================================================ */
-
         lastTelemetryTime =
             Date.now();
+
 
         setConnected();
 
@@ -2591,13 +2400,119 @@ socket.on(
 
 
             throttleFill.style.height =
-                throttle + "%";
+                throttle
+                +
+                "%";
 
 
             throttleValue.textContent =
                 throttle.toFixed(1)
                 +
                 "%";
+
+        }
+
+
+        /* ================================================
+           MOTOR POWER
+        ================================================ */
+
+        if (
+            data.m_power !== undefined
+        ) {
+
+            motorPowerElement.textContent =
+                numberValue(
+                    data.m_power,
+                    0
+                );
+
+        }
+
+
+        /* ================================================
+           MOTOR TEMPERATURE
+        ================================================ */
+
+        if (
+            data.motor_temp !== undefined
+        ) {
+
+            motorTemperatureElement.textContent =
+                numberValue(
+                    data.motor_temp,
+                    1
+                )
+                +
+                " °C";
+
+        }
+
+        else if (
+            data.motor_temperature !== undefined
+        ) {
+
+            motorTemperatureElement.textContent =
+                numberValue(
+                    data.motor_temperature,
+                    1
+                )
+                +
+                " °C";
+
+        }
+
+        else if (
+            data.ds18b20_temp !== undefined
+        ) {
+
+            motorTemperatureElement.textContent =
+                numberValue(
+                    data.ds18b20_temp,
+                    1
+                )
+                +
+                " °C";
+
+        }
+
+
+        /* ================================================
+           FUEL CELL POWER
+        ================================================ */
+
+        if (
+            data.fc
+            &&
+            data.fc.power !== undefined
+        ) {
+
+            fuelPowerElement.textContent =
+                numberValue(
+                    data.fc.power,
+                    0
+                );
+
+        }
+
+
+        /* ================================================
+           FUEL CELL TEMPERATURE
+        ================================================ */
+
+        if (
+            data.fc
+            &&
+            data.fc.stack_temp !== undefined
+        ) {
+
+            fuelTemperatureElement.textContent =
+                numberValue(
+                    data.fc.stack_temp,
+                    1
+                )
+                +
+                " °C";
 
         }
 
@@ -2637,6 +2552,23 @@ socket.on(
 
 
         /* ================================================
+           DISTANCE
+        ================================================ */
+
+        if (
+            data.distance_m !== undefined
+        ) {
+
+            distanceElement.textContent =
+                numberValue(
+                    data.distance_m,
+                    1
+                );
+
+        }
+
+
+        /* ================================================
            SLOPE
         ================================================ */
 
@@ -2656,75 +2588,6 @@ socket.on(
 
 
         /* ================================================
-           DISTANCE
-        ================================================ */
-
-        if (
-            data.distance_m !== undefined
-        ) {
-
-            distanceElement.textContent =
-                numberValue(
-                    data.distance_m,
-                    1
-                );
-
-        }
-
-
-        /* ================================================
-           MOTOR POWER
-        ================================================ */
-
-        if (
-            data.m_power !== undefined
-        ) {
-
-            motorPowerElement.textContent =
-                numberValue(
-                    data.m_power,
-                    0
-                );
-
-        }
-
-
-        /* ================================================
-           FUEL CELL POWER
-        ================================================ */
-
-        if (
-            data.fc &&
-            data.fc.power !== undefined
-        ) {
-
-            fuelPowerElement.textContent =
-                numberValue(
-                    data.fc.power,
-                    0
-                );
-
-        }
-
-
-        /* ================================================
-           TEMPERATURE
-        ================================================ */
-
-        if (
-            data.ds18b20_temp !== undefined
-        ) {
-
-            temperatureElement.textContent =
-                numberValue(
-                    data.ds18b20_temp,
-                    1
-                );
-
-        }
-
-
-        /* ================================================
            SYSTEM STATUS
         ================================================ */
 
@@ -2738,8 +2601,10 @@ socket.on(
         ================================================ */
 
         if (
-            data.gps &&
-            data.gps.lat !== undefined &&
+            data.gps
+            &&
+            data.gps.lat !== undefined
+            &&
             data.gps.lon !== undefined
         ) {
 
@@ -2780,8 +2645,10 @@ function updateSystemStatus(
     ===================================================== */
 
     if (
-        data.fc &&
-        data.fc.error_flag !== undefined &&
+        data.fc
+        &&
+        data.fc.error_flag !== undefined
+        &&
         Number(
             data.fc.error_flag
         ) !== 0
@@ -2800,7 +2667,8 @@ function updateSystemStatus(
     ===================================================== */
 
     if (
-        data.fc &&
+        data.fc
+        &&
         data.fc.h2_leak_volts !== undefined
     ) {
 
@@ -2813,7 +2681,8 @@ function updateSystemStatus(
         if (
             Number.isFinite(
                 leak
-            ) &&
+            )
+            &&
             leak >= 2.5
         ) {
 
@@ -2844,7 +2713,8 @@ function updateSystemStatus(
         if (
             Number.isFinite(
                 temperature
-            ) &&
+            )
+            &&
             temperature >= 70
         ) {
 
@@ -2859,7 +2729,7 @@ function updateSystemStatus(
 
 
     /* =====================================================
-       UPDATE
+       UPDATE SYSTEM
     ===================================================== */
 
     systemMessage.textContent =
@@ -2958,7 +2828,51 @@ L.tileLayer(
 
 
 /* =========================================================
-   VEHICLE MARKER
+   CAR MARKER
+========================================================= */
+
+/*
+   Uses your /car.png image.
+
+   IMPORTANT:
+   Make sure car.png is inside:
+
+   public/car.png
+*/
+
+
+const carIcon =
+    L.icon({
+
+        iconUrl:
+            "/car.png",
+
+        iconSize:
+            [
+                24,
+                48
+            ],
+
+        iconAnchor:
+            [
+                12,
+                24
+            ],
+
+        popupAnchor:
+            [
+                0,
+                -24
+            ],
+
+        className:
+            "team-car-marker"
+
+    });
+
+
+/* =========================================================
+   CREATE VEHICLE MARKER
 ========================================================= */
 
 const marker =
@@ -2967,38 +2881,15 @@ const marker =
         [
             defaultLat,
             defaultLon
-        ]
-
-    ).addTo(
-        map
-    );
-
-
-/* =========================================================
-   ROUTE
-========================================================= */
-
-let route = [];
-
-
-const polyline =
-    L.polyline(
-
-        route,
+        ],
 
         {
 
-            color:
-                "#00aaff",
+            icon:
+                carIcon,
 
-            weight:
-                4,
-
-            opacity:
-                0.9,
-
-            smoothFactor:
-                1.5
+            zIndexOffset:
+                1000
 
         }
 
@@ -3008,120 +2899,15 @@ const polyline =
 
 
 /* =========================================================
-   LAST ROUTE POINT
+   LAST VEHICLE POSITION
 ========================================================= */
 
-let lastRoutePoint =
+let lastVehiclePoint =
     null;
 
 
 /* =========================================================
-   GPS FILTER
-========================================================= */
-
-const MIN_ROUTE_DISTANCE =
-    1.5;
-
-
-const MAX_ROUTE_DISTANCE =
-    15;
-
-
-/* =========================================================
-   HAVERSINE DISTANCE
-========================================================= */
-
-function distanceBetweenPoints(
-
-    lat1,
-    lon1,
-    lat2,
-    lon2
-
-) {
-
-    const R =
-        6371000;
-
-
-    const dLat =
-        (
-            lat2 -
-            lat1
-        )
-        *
-        Math.PI /
-        180;
-
-
-    const dLon =
-        (
-            lon2 -
-            lon1
-        )
-        *
-        Math.PI /
-        180;
-
-
-    const a =
-
-        Math.sin(
-            dLat / 2
-        )
-        *
-        Math.sin(
-            dLat / 2
-        )
-
-        +
-
-        Math.cos(
-            lat1 *
-            Math.PI /
-            180
-        )
-
-        *
-
-        Math.cos(
-            lat2 *
-            Math.PI /
-            180
-        )
-
-        *
-
-        Math.sin(
-            dLon / 2
-        )
-        *
-
-        Math.sin(
-            dLon / 2
-        );
-
-
-    const c =
-        2 *
-        Math.atan2(
-
-            Math.sqrt(a),
-
-            Math.sqrt(
-                1 - a
-            )
-
-        );
-
-
-    return R * c;
-
-}
-
-
-/* =========================================================
-   UPDATE VEHICLE POSITION
+   GPS UPDATE
 ========================================================= */
 
 function updateVehiclePosition(
@@ -3166,10 +2952,20 @@ function updateVehiclePosition(
 
     ) {
 
+        console.warn(
+            "Invalid GPS:",
+            latitude,
+            longitude
+        );
+
         return;
 
     }
 
+
+    /* =====================================================
+       CURRENT POINT
+    ===================================================== */
 
     const currentPoint = [
 
@@ -3180,7 +2976,7 @@ function updateVehiclePosition(
 
 
     /* =====================================================
-       MOVE MARKER
+       MOVE CAR
     ===================================================== */
 
     marker.setLatLng(
@@ -3189,149 +2985,15 @@ function updateVehiclePosition(
 
 
     /* =====================================================
-       FIRST POINT
+       SAVE POSITION
     ===================================================== */
 
-    if (
-        lastRoutePoint === null
-    ) {
-
-        route.push(
-            currentPoint
-        );
-
-
-        lastRoutePoint =
-            currentPoint;
-
-
-        polyline.setLatLngs(
-            route
-        );
-
-
-        updateRouteStatus();
-
-
-        map.setView(
-
-            currentPoint,
-
-            map.getZoom(),
-
-            {
-                animate: true
-            }
-
-        );
-
-
-        return;
-
-    }
-
-
-    /* =====================================================
-       MOVEMENT
-    ===================================================== */
-
-    const movement =
-        distanceBetweenPoints(
-
-            lastRoutePoint[0],
-
-            lastRoutePoint[1],
-
-            latitude,
-
-            longitude
-
-        );
-
-
-    /* =====================================================
-       GPS JITTER
-    ===================================================== */
-
-    if (
-        movement <
-        MIN_ROUTE_DISTANCE
-    ) {
-
-        return;
-
-    }
-
-
-    /* =====================================================
-       GPS JUMP
-    ===================================================== */
-
-    if (
-        movement >
-        MAX_ROUTE_DISTANCE
-    ) {
-
-        console.warn(
-
-            "GPS jump ignored:",
-
-            movement.toFixed(1),
-
-            "m"
-
-        );
-
-        return;
-
-    }
-
-
-    /* =====================================================
-       ADD ROUTE POINT
-    ===================================================== */
-
-    route.push(
-        currentPoint
-    );
-
-
-    lastRoutePoint =
+    lastVehiclePoint =
         currentPoint;
 
 
     /* =====================================================
-       LIMIT ROUTE
-    ===================================================== */
-
-    const MAX_ROUTE_POINTS =
-        2000;
-
-
-    if (
-        route.length >
-        MAX_ROUTE_POINTS
-    ) {
-
-        route.shift();
-
-    }
-
-
-    /* =====================================================
-       UPDATE POLYLINE
-    ===================================================== */
-
-    polyline.setLatLngs(
-        route
-    );
-
-
-    updateRouteStatus();
-
-
-    /* =====================================================
-       FOLLOW VEHICLE
+       FOLLOW CAR
     ===================================================== */
 
     map.panTo(
@@ -3349,52 +3011,6 @@ function updateVehiclePosition(
     );
 
 }
-
-
-/* =========================================================
-   ROUTE STATUS
-========================================================= */
-
-function updateRouteStatus() {
-
-    routeStatus.textContent =
-        "Route: "
-        +
-        route.length
-        +
-        " points";
-
-}
-
-
-/* =========================================================
-   CLEAR ROUTE
-========================================================= */
-
-clearRouteButton.addEventListener(
-
-    "click",
-
-    () => {
-
-        route = [];
-
-        lastRoutePoint =
-            null;
-
-        polyline.setLatLngs(
-            []
-        );
-
-        updateRouteStatus();
-
-        console.log(
-            "Route cleared"
-        );
-
-    }
-
-);
 
 
 /* =========================================================
@@ -3421,21 +3037,30 @@ function resizeMap() {
 
 
 window.addEventListener(
+
     "resize",
+
     resizeMap
+
 );
 
 
 window.addEventListener(
+
     "orientationchange",
+
     () => {
 
         setTimeout(
+
             resizeMap,
-            400
+
+            500
+
         );
 
     }
+
 );
 
 
@@ -3450,8 +3075,11 @@ if (
         () => {
 
             setTimeout(
+
                 resizeMap,
+
                 400
+
             );
 
         }
@@ -3462,40 +3090,117 @@ if (
 
 
 setTimeout(
+
     resizeMap,
+
     500
+
 );
 
 
 /* =========================================================
-   FULL SCREEN
+   FULLSCREEN
 ========================================================= */
 
 async function enterFullscreen() {
 
     try {
 
+
+        /* =================================================
+           FULLSCREEN
+        ================================================= */
+
         if (
             !document.fullscreenElement
         ) {
 
-            await document.documentElement
+            await document
+                .documentElement
                 .requestFullscreen();
 
         }
+
+
+        /* =================================================
+           LANDSCAPE
+        ================================================= */
+
+        if (
+            screen.orientation
+            &&
+            screen.orientation.lock
+        ) {
+
+            try {
+
+                await screen.orientation.lock(
+                    "landscape"
+                );
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.log(
+                    "Orientation lock unavailable"
+                );
+
+            }
+
+        }
+
+
+        /* =================================================
+           WAKE LOCK
+        ================================================= */
+
+        if (
+            "wakeLock"
+            in
+            navigator
+        ) {
+
+            try {
+
+                await navigator.wakeLock.request(
+                    "screen"
+                );
+
+            }
+
+            catch (
+                error
+            ) {
+
+                console.log(
+                    "Wake lock unavailable"
+                );
+
+            }
+
+        }
+
 
         fullscreenButton.style.display =
             "none";
 
 
         setTimeout(
+
             resizeMap,
+
             500
+
         );
 
     }
 
-    catch (error) {
+    catch (
+        error
+    ) {
 
         console.warn(
             "Fullscreen unavailable:",
@@ -3517,7 +3222,7 @@ fullscreenButton.addEventListener(
 
 
 /* =========================================================
-   FULLSCREEN STATE
+   FULLSCREEN CHANGE
 ========================================================= */
 
 document.addEventListener(
@@ -3544,8 +3249,11 @@ document.addEventListener(
 
 
         setTimeout(
+
             resizeMap,
-            300
+
+            400
+
         );
 
     }
@@ -3558,7 +3266,9 @@ document.addEventListener(
 ========================================================= */
 
 if (
-    "serviceWorker" in navigator
+    "serviceWorker"
+    in
+    navigator
 ) {
 
     window.addEventListener(
@@ -3577,7 +3287,7 @@ if (
                     registration => {
 
                         console.log(
-                            "Service Worker registered:",
+                            "Service Worker:",
                             registration.scope
                         );
 
@@ -3590,7 +3300,7 @@ if (
                     error => {
 
                         console.warn(
-                            "Service Worker registration failed:",
+                            "Service Worker failed:",
                             error
                         );
 
